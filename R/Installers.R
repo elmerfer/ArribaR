@@ -19,7 +19,13 @@ library(R.utils)
   }
   return(invisible(config))
 }
-
+#' InstallArribaR
+#' This function will install the arri software and all its dependencies like the roght STAR version
+#' It currently install version 2.1.0 of arriba and 2.7.6a of STAR, the GRCh37 genome assembly and GENCODE19.gtf annotation
+#' future installer will be more felxible
+#' @param extDir character string of the instalation path. It should be write enable and hold enouph space
+#' if missing, it will create on the current directory the folder "Software" and everything will be installed there
+#' if given, it will create the folder givenpath/Software
 InstallArribaR <- function(extDir){
   if(missing(extDir)){
     extDir <- "./Software"

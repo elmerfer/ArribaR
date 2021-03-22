@@ -2,10 +2,19 @@ Package: ArribaR
 Type: Package
 Title: What the Package Does (Title Case)
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Author: Elmer A. Fernández
+Maintainer: Elmer A. Fernández <efernandez@cidie.ucc.edu.ar>
+Description: This package is intended to be a No Bioinformatic Need for gene expression and gene fusion analisys
+License: MIT
 Encoding: UTF-8
 LazyData: true
+Imports:
+    ggplot2,
+    stringr,
+    openxlsx,
+    BiocParallel,
+    ggseqlogo,
+    plyr
+Suggests: 
+    knitr, 
+    rmarkdown
