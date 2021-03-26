@@ -5,19 +5,19 @@ library(R.utils)
 #' @param config config list structure with software$softName...
 #'
 .OpenConfigFile <- function(config){
-  config.file <- file.path( R.home(),"GeneFusionPkg.RData")
+  config.file <- file.path( .libPaths()[1],"GeneFusionPkg.RData")
   if(file.exists(config.file)){
-    config <- readRDS(config.file)
+    if(missing(config)){##si lo llama vacio, devuleve lo que hay en el file
+      config <- readRDS(config.file)
+      return(invisible(config))
+    }else{
+      saveRDS(config,config.file)
+      return(invisible(config))
+    }
   }else{
-    config <- NULL
+    return(list())
   }
-  if(missing(config)){
-    ##abrir config file
-   return(config)
-  }else{##guardar config
-    saveRDS(congif,config.file)
-  }
-  return(invisible(config))
+  
 }
 #' InstallArribaR
 #' This function will install the arri software and all its dependencies like the roght STAR version
@@ -32,12 +32,14 @@ InstallArribaR <- function(extDir){
   }else{
     extDir <- normalizePath(file.path(extDir,"Software"))
   }
-  software <- list()
+  software <- .OpenConfigFile()
   software$mainPath <- extDir
   software <- .OpenConfigFile(software)
   ##Install STAR
   .InstallSTAR()
   .DownloadAssemblies()
+  .DownloadAnnotation()
+  .BuildSTARindex()
   .InstallArribaGeneFusion()
 }
 
@@ -70,8 +72,8 @@ InstallArribaR <- function(extDir){
     cat("\nSTAR 2.7.6a installed")
   }
   system2(command = software$star$command)
-  softare$star$alignmentPrefix <- "_STAR_Aligned.bam"
-  software$star$aligmentPrefixSorted <- "_STAR_AlignedSortedByCoord.bam"
+  software$star$alignmentPrefix <- "_STAR_Aligned.bam"
+  software$star$alignmentPrefixSorted <- "_STAR_AlignedSortedByCoordinates.bam"
   .OpenConfigFile(config = software)
 }
 
@@ -81,13 +83,14 @@ InstallArribaR <- function(extDir){
 
   software <- .OpenConfigFile()
   software$assembly <- file.path(software$mainPath,"Assemblies")
+  dir.create(software$assembly)
 
   # assembly.destination <- "/media/respaldo4t/Assemblies"
   # annotation.destination <- "/media/respaldo4t/Annotation"
   download.file(url = "ftp://ftp.ensembl.org/pub/grch37/release-87/fasta/homo_sapiens/dna/Homo_sapiens.GRCh37.dna.primary_assembly.fa.gz",
                 method = "wget",
                 destfile = normalizePath(file.path(software$assembly,"GRCh37.fa.gz")))
-  gunzip(filename = normalizePath(file.path(software$assembly,"GRCh37.fa.gz")),
+  R.utils::gunzip(filename = normalizePath(file.path(software$assembly,"GRCh37.fa.gz")),
         remove = T)
 
   argum <- paste0("sed -e ", shQuote("s/^MT\\t/chrM\\t/")," -e ",shQuote("s/^\\([1-9XY]\\|[12][0-9]\\)\\t/\\1\\t/"), " ",
@@ -100,9 +103,22 @@ InstallArribaR <- function(extDir){
   }else{
     stop("ERROR GRCh37")
   }
-  software <- .OpenConfigFile(software)
+  .OpenConfigFile(software)
+
+}
+
+
+.DownloadAnnotation <-function(){
+  software <- .OpenConfigFile()
   ###Annotation
   software$annotation <- file.path(software$mainPath,"Annotation")
+  if(!dir.exists(software$annotation)){
+    cat(paste0("\nCreating ",software$annotation))
+    dir.create(software$annotation)
+    if(dir.exists(software$annotation)){
+      cat("---> OK\n")
+    }
+  }
   cat("\nDownloading GRCh37 Annotation Homo Sapiens...")
   arg2 <- paste0("wget --load-cookies /tmp/cookies.txt \"https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1qa9YrM-hOwzKgS8tZcU3XlTBulHnMORO' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\\1\\n/p'",")","&id=1qa9YrM-hOwzKgS8tZcU3XlTBulHnMORO\"")
   arg2 <- paste(arg2," -O ",normalizePath(file.path(software$annotation,"GENCODE19.gtf.zip"))," && rm -rf /tmp/cookies.txt")
@@ -120,23 +136,26 @@ InstallArribaR <- function(extDir){
   }else{
     stop("ERROR annotation")
   }
+}
 
+.BuildSTARindex <- function(){
+  software <- .OpenConfigFile()
   if(is.null(software$star$path)){
     stop("STAR not installed")
   }
   cat("\nBuilding STAR 2.7.6a - ARRIBA Genome Index...This may take some time")
   thr <- ifelse(parallel::detectCores() > 3, parallel::detectCores()-1, parallel::detectCores())
   cat(paste0("\nRunning STAR genomeGenerate with ",thr," CPU cores"))
-  software$arriba$genomeDir <- file.path(sofware$assemblies,"STAR_GRCh37_GENCODE19_index")
-
+  software$arriba$genomeDir <- file.path(software$assembly,"STAR_GRCh37_GENCODE19_index")
+  
   system2(command = software$star$command,
-         args = c("--runMode genomeGenerate",
-                  paste0("--genomeDir ",software$arriba$genomeDir),
-                  paste0("--genomeFastaFiles ",sofware$assemblies,"/GRCh37.fa"),
-                  paste0("--sjdbGTFfile ",file.path(software$annotation,"GENCODE19.gtf")),
-                  paste0("--runThreadN ",thr),
-                  "--sjdbOverhang 250") )
-
+          args = c("--runMode genomeGenerate",
+                   paste0("--genomeDir ",software$arriba$genomeDir),
+                   paste0("--genomeFastaFiles ",software$assembly,"/GRCh37.fa"),
+                   paste0("--sjdbGTFfile ",file.path(software$annotation,"GENCODE19.gtf")),
+                   paste0("--runThreadN ",thr),
+                   "--sjdbOverhang 250") )
+  .OpenConfigFile(software)
 }
 
 .InstallArribaGeneFusion <- function(){
@@ -179,7 +198,7 @@ InstallArribaR <- function(extDir){
         extras = paste0("--strip-components ",1))
   software$arriba$command <- file.path(software$arriba$path,"arriba")
   if(file.exists(software$arriba$command)){
-    system2(command = software$arriba$command)
+    system2(command = software$arriba$command, args = "-h")
     .OpenConfigFile(software)
   }else{
     stop("ERROR arriba failed")
@@ -187,12 +206,6 @@ InstallArribaR <- function(extDir){
 
 }
 
-# DetectGeneFusions <- function(sbjFQ1){{
-#   sbjFQ1 <- "/media/respaldo4t/RNAseq/39738/39738_1.fastq.gz"
-#
-# }
-#   system2(command = "/media/respaldo4t/Softwares/Arriba/arriba")
-# }
 
 
 

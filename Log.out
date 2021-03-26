@@ -1,0 +1,229 @@
+STAR version=2.7.6a
+STAR compilation time,server,dir=Sat Sep 19 11:48:47 EDT 2020 vega:/home/dobin/data/STAR/STARcode/STAR.master/source
+##### Command Line:
+/media/respaldo4t/Paquetes/Software/STAR/STAR --runThreadN 8 --genomeDir /media/respaldo4t/Paquetes/Software/Assemblies/STAR_GRCh37_GENCODE19_index --readFilesIn /media/respaldo4t/RNAseq/39738/39738_1.fastq.gz /media/respaldo4t/RNAseq/39738/39738_2.fastq.gz --readFilesCommand zcat --outStd BAM_Unsorted --outSAMtype BAM Unsorted --outSAMunmapped Within --outBAMcompression 0 --outFilterMultimapNmax 50 --peOverlapNbasesMin 10 --alignSplicedMateMapLminOverLmate 0.5 --alignSJstitchMismatchNmax 5 -1 5 5 --chimSegmentMin 10 --chimOutType WithinBAM HardClip --chimJunctionOverhangMin 10 --chimScoreDropMax 30 --chimScoreJunctionNonGTAG 0 --chimScoreSeparation 1 --chimSegmentReadGapMax 3 --chimMultimapNmax 50
+##### Initial USER parameters from Command Line:
+outStd                            BAM_Unsorted
+###### All USER parameters from Command Line:
+runThreadN                    8     ~RE-DEFINED
+genomeDir                     /media/respaldo4t/Paquetes/Software/Assemblies/STAR_GRCh37_GENCODE19_index     ~RE-DEFINED
+readFilesIn                   /media/respaldo4t/RNAseq/39738/39738_1.fastq.gz   /media/respaldo4t/RNAseq/39738/39738_2.fastq.gz        ~RE-DEFINED
+readFilesCommand              zcat        ~RE-DEFINED
+outStd                        BAM_Unsorted     ~RE-DEFINED
+outSAMtype                    BAM   Unsorted        ~RE-DEFINED
+outSAMunmapped                Within        ~RE-DEFINED
+outBAMcompression             0     ~RE-DEFINED
+outFilterMultimapNmax         50     ~RE-DEFINED
+peOverlapNbasesMin            10     ~RE-DEFINED
+alignSplicedMateMapLminOverLmate0.5     ~RE-DEFINED
+alignSJstitchMismatchNmax     5   -1   5   5        ~RE-DEFINED
+chimSegmentMin                10     ~RE-DEFINED
+chimOutType                   WithinBAM   HardClip        ~RE-DEFINED
+chimJunctionOverhangMin       10     ~RE-DEFINED
+chimScoreDropMax              30     ~RE-DEFINED
+chimScoreJunctionNonGTAG      0     ~RE-DEFINED
+chimScoreSeparation           1     ~RE-DEFINED
+chimSegmentReadGapMax         3     ~RE-DEFINED
+chimMultimapNmax              50     ~RE-DEFINED
+##### Finished reading parameters from all sources
+
+##### Final user re-defined parameters-----------------:
+runThreadN                        8
+genomeDir                         /media/respaldo4t/Paquetes/Software/Assemblies/STAR_GRCh37_GENCODE19_index
+readFilesIn                       /media/respaldo4t/RNAseq/39738/39738_1.fastq.gz   /media/respaldo4t/RNAseq/39738/39738_2.fastq.gz   
+readFilesCommand                  zcat   
+outStd                            BAM_Unsorted
+outSAMtype                        BAM   Unsorted   
+outSAMunmapped                    Within   
+outBAMcompression                 0
+outFilterMultimapNmax             50
+alignSJstitchMismatchNmax         5   -1   5   5   
+alignSplicedMateMapLminOverLmate    0.5
+peOverlapNbasesMin                10
+chimSegmentMin                    10
+chimScoreDropMax                  30
+chimScoreSeparation               1
+chimScoreJunctionNonGTAG          0
+chimJunctionOverhangMin           10
+chimOutType                       WithinBAM   HardClip   
+chimSegmentReadGapMax             3
+chimMultimapNmax                  50
+
+-------------------------------
+##### Final effective command line:
+/media/respaldo4t/Paquetes/Software/STAR/STAR   --runThreadN 8   --genomeDir /media/respaldo4t/Paquetes/Software/Assemblies/STAR_GRCh37_GENCODE19_index   --readFilesIn /media/respaldo4t/RNAseq/39738/39738_1.fastq.gz   /media/respaldo4t/RNAseq/39738/39738_2.fastq.gz      --readFilesCommand zcat      --outStd BAM_Unsorted   --outSAMtype BAM   Unsorted      --outSAMunmapped Within      --outBAMcompression 0   --outFilterMultimapNmax 50   --alignSJstitchMismatchNmax 5   -1   5   5      --alignSplicedMateMapLminOverLmate 0.5   --peOverlapNbasesMin 10   --chimSegmentMin 10   --chimScoreDropMax 30   --chimScoreSeparation 1   --chimScoreJunctionNonGTAG 0   --chimJunctionOverhangMin 10   --chimOutType WithinBAM   HardClip      --chimSegmentReadGapMax 3   --chimMultimapNmax 50
+----------------------------------------
+
+Number of fastq files for each mate = 1
+
+   Input read files for mate 1 :
+-rwxrwxr-x 1 elmer elmer 3092726045 dic 23 20:44 /media/respaldo4t/RNAseq/39738/39738_1.fastq.gz
+
+   readsCommandsFile:
+exec > "./_STARtmp/tmp.fifo.read1"
+echo FILE 0
+zcat      "/media/respaldo4t/RNAseq/39738/39738_1.fastq.gz"
+
+
+   Input read files for mate 2 :
+-rwxrwxr-x 1 elmer elmer 3129641376 dic 23 20:45 /media/respaldo4t/RNAseq/39738/39738_2.fastq.gz
+
+   readsCommandsFile:
+exec > "./_STARtmp/tmp.fifo.read2"
+echo FILE 0
+zcat      "/media/respaldo4t/RNAseq/39738/39738_2.fastq.gz"
+
+Finished loading and checking parameters
+Reading genome generation parameters:
+### /media/respaldo4t/Paquetes/Software/STAR/STAR   --runMode genomeGenerate   --runThreadN 11   --genomeDir /media/respaldo4t/Paquetes/Software/Assemblies/STAR_GRCh37_GENCODE19_index   --genomeFastaFiles /media/respaldo4t/Paquetes/Software/Assemblies/GRCh37.fa      --sjdbGTFfile /media/respaldo4t/Paquetes/Software/Annotation/GENCODE19.gtf   --sjdbOverhang 250
+### GstrandBit=32
+versionGenome                 2.7.4a     ~RE-DEFINED
+genomeType                    Full     ~RE-DEFINED
+genomeFastaFiles              /media/respaldo4t/Paquetes/Software/Assemblies/GRCh37.fa        ~RE-DEFINED
+genomeSAindexNbases           14     ~RE-DEFINED
+genomeChrBinNbits             18     ~RE-DEFINED
+genomeSAsparseD               1     ~RE-DEFINED
+genomeTransformType           None     ~RE-DEFINED
+genomeTransformVCF            -     ~RE-DEFINED
+sjdbOverhang                  250     ~RE-DEFINED
+sjdbFileChrStartEnd           -        ~RE-DEFINED
+sjdbGTFfile                   /media/respaldo4t/Paquetes/Software/Annotation/GENCODE19.gtf     ~RE-DEFINED
+sjdbGTFchrPrefix              -     ~RE-DEFINED
+sjdbGTFfeatureExon            exon     ~RE-DEFINED
+sjdbGTFtagExonParentTranscripttranscript_id     ~RE-DEFINED
+sjdbGTFtagExonParentGene      gene_id     ~RE-DEFINED
+sjdbInsertSave                Basic     ~RE-DEFINED
+genomeFileSizes               3287953876   25054814255        ~RE-DEFINED
+Genome version is compatible with current STAR
+Number of real (reference) chromosomes= 84
+1	1	249250621	0
+2	10	135534747	249298944
+3	11	135006516	385089536
+4	12	133851895	520355840
+5	13	115169878	654311424
+6	14	107349540	769654784
+7	15	102531392	877133824
+8	16	90354753	979894272
+9	17	81195210	1070333952
+10	18	78077248	1151598592
+11	19	59128983	1229717504
+12	2	243199373	1288962048
+13	20	63025520	1532231680
+14	21	48129895	1595408384
+15	22	51304566	1643642880
+16	3	198022430	1695023104
+17	4	191154276	1893203968
+18	5	180915260	2084569088
+19	6	171115067	2265710592
+20	7	159138663	2436890624
+21	8	146364022	2596274176
+22	9	141213431	2742812672
+23	MT	16569	2884108288
+24	X	155270560	2884370432
+25	Y	59373566	3039821824
+26	GL000192.1	547496	3099328512
+27	GL000225.1	211173	3100114944
+28	GL000194.1	191469	3100377088
+29	GL000193.1	189789	3100639232
+30	GL000200.1	187035	3100901376
+31	GL000222.1	186861	3101163520
+32	GL000212.1	186858	3101425664
+33	GL000195.1	182896	3101687808
+34	GL000223.1	180455	3101949952
+35	GL000224.1	179693	3102212096
+36	GL000219.1	179198	3102474240
+37	GL000205.1	174588	3102736384
+38	GL000215.1	172545	3102998528
+39	GL000216.1	172294	3103260672
+40	GL000217.1	172149	3103522816
+41	GL000199.1	169874	3103784960
+42	GL000211.1	166566	3104047104
+43	GL000213.1	164239	3104309248
+44	GL000220.1	161802	3104571392
+45	GL000218.1	161147	3104833536
+46	GL000209.1	159169	3105095680
+47	GL000221.1	155397	3105357824
+48	GL000214.1	137718	3105619968
+49	GL000228.1	129120	3105882112
+50	GL000227.1	128374	3106144256
+51	GL000191.1	106433	3106406400
+52	GL000208.1	92689	3106668544
+53	GL000198.1	90085	3106930688
+54	GL000204.1	81310	3107192832
+55	GL000233.1	45941	3107454976
+56	GL000237.1	45867	3107717120
+57	GL000230.1	43691	3107979264
+58	GL000242.1	43523	3108241408
+59	GL000243.1	43341	3108503552
+60	GL000241.1	42152	3108765696
+61	GL000236.1	41934	3109027840
+62	GL000240.1	41933	3109289984
+63	GL000206.1	41001	3109552128
+64	GL000232.1	40652	3109814272
+65	GL000234.1	40531	3110076416
+66	GL000202.1	40103	3110338560
+67	GL000238.1	39939	3110600704
+68	GL000244.1	39929	3110862848
+69	GL000248.1	39786	3111124992
+70	GL000196.1	38914	3111387136
+71	GL000249.1	38502	3111649280
+72	GL000246.1	38154	3111911424
+73	GL000203.1	37498	3112173568
+74	GL000197.1	37175	3112435712
+75	GL000245.1	36651	3112697856
+76	GL000247.1	36422	3112960000
+77	GL000201.1	36148	3113222144
+78	GL000235.1	34474	3113484288
+79	GL000239.1	33824	3113746432
+80	GL000210.1	27682	3114008576
+81	GL000231.1	27386	3114270720
+82	GL000229.1	19913	3114532864
+83	GL000226.1	15008	3114795008
+84	GL000207.1	4262	3115057152
+--sjdbOverhang = 250 taken from the generated genome
+Started loading the genome: Thu Mar 25 15:46:00 2021
+
+Genome: size given as a parameter = 3287953876
+SA: size given as a parameter = 25054814255
+SAindex: size given as a parameter = 1
+Read from SAindex: pGe.gSAindexNbases=14  nSAi=357913940
+nGenome=3287953876;  nSAbyte=25054814255
+GstrandBit=32   SA number of indices=6073894364
+Shared memory is not used for genomes. Allocated a private copy of the genome.
+Genome file size: 3287953876 bytes; state: good=1 eof=0 fail=0 bad=0
+Loading Genome ... done! state: good=1 eof=0 fail=0 bad=0; loaded 3287953876 bytes
+SA file size: 25054814255 bytes; state: good=1 eof=0 fail=0 bad=0
+Loading SA ... done! state: good=1 eof=0 fail=0 bad=0; loaded 25054814255 bytes
+Loading SAindex ... done: 1565873619 bytes
+Finished loading the genome: Thu Mar 25 15:48:48 2021
+
+Processing splice junctions database sjdbN=344580,   pGe.sjdbOverhang=250 
+alignIntronMax=alignMatesGapMax=0, the max intron size will be approximately determined by (2^winBinNbits)*winAnchorDistNbins=589824
+WARNING --chimOutType=WithinBAM, therefore STAR will output NM attribute
+Created thread # 1
+Created thread # 2
+Starting to map file # 0
+mate 1:   /media/respaldo4t/RNAseq/39738/39738_1.fastq.gz
+mate 2:   /media/respaldo4t/RNAseq/39738/39738_2.fastq.gz
+Created thread # 3
+Created thread # 4
+Created thread # 5
+Created thread # 6
+Created thread # 7
+Thread #6 end of input stream, nextChar=-1
+Completed: thread #5
+Completed: thread #3
+Completed: thread #4
+Completed: thread #6
+Completed: thread #7
+Completed: thread #0
+Completed: thread #2
+Completed: thread #1
+Joined thread # 1
+Joined thread # 2
+Joined thread # 3
+Joined thread # 4
+Joined thread # 5
+Joined thread # 6
+Joined thread # 7
+ALL DONE!

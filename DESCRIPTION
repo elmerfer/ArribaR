@@ -13,8 +13,9 @@ Imports:
     stringr,
     openxlsx,
     BiocParallel,
-    ggseqlogo,
-    plyr
+    plyr,
+    Rsamtools
 Suggests: 
     knitr, 
     rmarkdown
+RoxygenNote: 7.1.1
