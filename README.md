@@ -32,4 +32,4 @@ runSTAR("my_1.fastq.gz")
 ```
 
 # Authors
-* ++Elmer A. Fernández** CIDIE-UCC-CONICET
+* **Elmer A. Fernández** CIDIE-UCC-CONICET
