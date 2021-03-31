@@ -23,6 +23,7 @@ This make take a long time and it will do the following process
 * the GENCODE GTF annotation file
 * build the human reference index file
 * minimal installation of the Arriba software 2.1.0
+
 as a result it will leave an organized "Software" folder at where/I/want/to/instal/path
 
 ## Usage
@@ -31,3 +32,4 @@ runSTAR("my_1.fastq.gz")
 ```
 
 # Authors
+* ++Elmer A. Fernández** CIDIE-UCC-CONICET
