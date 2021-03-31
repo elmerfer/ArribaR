@@ -1,4 +1,13 @@
 ##params
+getDarkColor <- function(color) {
+  rgb(
+    max(0,col2rgb(color)["red",]-100),
+    max(0,col2rgb(color)["green",]-100),
+    max(0,col2rgb(color)["blue",]-100),
+    maxColorValue=255
+  )
+}
+
 parameters <- list(
 
   minConfidenceForCircosPlot=list("minConfidenceForCircosPlot", "string", "medium"),
@@ -33,14 +42,7 @@ fontSize <- parameters$fontSize[[3]]
 transcriptSelection <- parameters$transcriptSelection[[3]]
 minConfidenceForCircosPlot <- parameters$minConfidenceForCircosPlot[[3]]
 
-getDarkColor <- function(color) {
-  rgb(
-    max(0,col2rgb(color)["red",]-100),
-    max(0,col2rgb(color)["green",]-100),
-    max(0,col2rgb(color)["blue",]-100),
-    maxColorValue=255
-  )
-}
+
 
 ##drawing functions
 drawVerticalGradient <- function(left, right, y, color, selection=NULL) {
@@ -265,7 +267,7 @@ drawProteinDomains <- function(fusion, exons1, exons2, proteinDomains, color1, c
   domainsGRanges$proteinDomainName <- proteinDomains$proteinDomainName
   domainsGRanges$proteinDomainID <- proteinDomains$proteinDomainID
   domainsGRanges$color <- proteinDomains$color
-  domainsGRanges <- domainsGRanges[suppressWarnings(unique(queryHits(findOverlaps(domainsGRanges, union(exonsGRanges1, exonsGRanges2)))))]
+  domainsGRanges <- domainsGRanges[suppressWarnings(unique(queryHits(findOverlaps(domainsGRanges, GenomicRanges::union(exonsGRanges1, exonsGRanges2)))))]
 
   # group overlapping domains by domain ID
   domainsGRangesList <- GRangesList(lapply(unique(domainsGRanges$proteinDomainID), function(x) { domainsGRanges[domainsGRanges$proteinDomainID == x] }))
@@ -277,7 +279,7 @@ drawProteinDomains <- function(fusion, exons1, exons2, proteinDomains, color1, c
       lapply(
         domainsGRangesList,
         function(x) {
-          intersected <- as.data.frame(reduce(suppressWarnings(intersect(x, exonsGRanges))))
+          intersected <- as.data.frame(GenomicRanges::reduce(suppressWarnings(GenomicRanges::intersect(x, exonsGRanges))))
           if (nrow(intersected) > 0) {
             intersected$proteinDomainName <- head(x$proteinDomainName, 1)
             intersected$proteinDomainID <- head(x$proteinDomainID, 1)
@@ -338,7 +340,7 @@ drawProteinDomains <- function(fusion, exons1, exons2, proteinDomains, color1, c
         unique(retainedDomains$proteinDomainID),
         function(x) {
           domain <- retainedDomains[retainedDomains$proteinDomainID == x,]
-          merged <- reduce(GRanges(domain$seqnames, IRanges(domain$start, domain$end), strand=domain$strand))
+          merged <- GenomicRanges::reduce(GRanges(domain$seqnames, IRanges(domain$start, domain$end), strand=domain$strand))
           merged$proteinDomainName <- head(domain$proteinDomainName, 1)
           merged$proteinDomainID <- head(domain$proteinDomainID, 1)
           merged$color <- head(domain$color, 1)
@@ -658,15 +660,12 @@ findExons <- function(exons, contig, gene, direction, breakpoint, coverage, tran
 
 FusionsPlot <- function(fusionTable ,exons, cytobands, alignmentsFile , proteinDomains ,gene1 ,gene2){
   ##
-  fusionTable <- fusions
-  exons <- exons
-  cytobands <- cytobands
-  alignmentsFile <-  alignmentsFile
-  proteinDomains <- proteinDomains
+ require(GenomicAlignments)
+  require(GenomicRanges)
   ##
   fusions <- fusionTable
   for (fusion in 1:nrow(fusions)) {
-     fusion <- 1
+  
     message(paste0("Drawing fusion #", fusion, ": ", fusions[fusion,"gene1"], ":", fusions[fusion,"gene2"]))
 
     # compute coverage from alignments file
@@ -763,12 +762,24 @@ FusionsPlot <- function(fusionTable ,exons, cytobands, alignmentsFile , proteinD
     if (breakpoint1 < min(exons1$start)) {
       exons1 <- rbind(c(exons1[1,"contig"], "dummy", breakpoint1-1000, breakpoint1-1000, exons1[1,"strand"], "", "dummy", exons1[1,"geneID"], exons1[1,"transcript"], ""), exons1)
     } else if (breakpoint1 > max(exons1$end)) {
-      exons1 <- rbind(exons1, c(exons1[1,"contig"], "dummy", breakpoint1+1000, breakpoint1+1000, exons1[1,"strand"], "", "dummy", exons1[1,"geneID"], exons1[1,"transcript"], ""))
+      aa <- matrix(c(exons1[1,"contig"], "dummy", breakpoint1+1000, breakpoint1+1000, exons1[1,"strand"], "", "dummy", exons1[1,"geneID"], exons1[1,"transcript"], ""),nrow = 1)
+      aa <- data.frame(aa)
+      colnames(aa) <- colnames(exons1)
+      exons1 <- rbind(exons1,aa)
+      # exons1$start <- as.numeric(exons1$start)
+      # exons1$end <- as.numeric(exons1$end)
+      # exons1 <- rbind(exons1, t(data.frame(
+      #   c(exons1[1,"contig"], "dummy", breakpoint1+1000, breakpoint1+1000, exons1[1,"strand"], "", "dummy", exons1[1,"geneID"], exons1[1,"transcript"], ""))))
     }
     if (breakpoint2 < min(exons2$start)) {
       exons2 <- rbind(c(exons2[1,"contig"], "dummy", breakpoint2-1000, breakpoint2-1000, exons2[1,"strand"], "", "dummy", exons2[1,"geneID"], exons2[1,"transcript"], ""), exons2)
     } else if (breakpoint2 > max(exons2$end)) {
-      exons2 <- rbind(exons2, c(exons2[1,"contig"], "dummy", breakpoint2+1000, breakpoint2+1000, exons2[1,"strand"], "", "dummy", exons2[1,"geneID"], exons2[1,"transcript"], ""))
+      aa2 <- matrix(c(exons2[1,"contig"], "dummy", breakpoint2+1000, breakpoint2+1000, exons2[1,"strand"], "", "dummy", exons2[1,"geneID"], exons2[1,"transcript"], ""),nrow = 1)
+      aa2 <- data.frame(aa2)
+      colnames(aa2) <- colnames(exons2)
+      exons2 <- rbind(exons2, aa2)
+      # exons2$start <- as.numeric(exons2$start)
+      # exons2$end <- as.numeric(exons2$end)
     }
     exons1$start <- as.integer(exons1$start)
     exons1$end <- as.integer(exons1$end)
@@ -1071,7 +1082,14 @@ FusionsPlot <- function(fusionTable ,exons, cytobands, alignmentsFile , proteinD
 }
 
 
-fusionPlot <- function(sbjBamFile){
+#' fusionPlot 
+#' This function provides gene fusion visualization
+#' @param sbjBamFile string with full path of the processed and sorted bam file processed by runSTAR and runArriba
+#' @seealso runArriba
+#' 
+fusionPlot <- function(sbjBamFile,...){
+  darkColor1 <- getDarkColor(color1)
+  darkColor2 <- getDarkColor(color2)
   software <- .OpenConfigFile()
 
   if(!stringr::str_detect(sbjBamFile,software$star$alignmentPrefixSorted)){
@@ -1083,9 +1101,33 @@ fusionPlot <- function(sbjBamFile){
   }
 
   fusion.file <- stringr::str_remove(sbjBamFile,software$star$alignmentPrefixSorted)
-  fusion.file <- paste0(fusion.file,"_Fusions.xlsx")
+  fusion.file <- paste0(fusion.file,"_Fusions.tsv")
 
-  fusionTable - openxlsx::read.xlsx(fusion.file)
+  # fusionTable <- openxlsx::read.xlsx(fusion.file)
 
-
+  fusions <- .ReadArribaFusionTable(fusionsFile = fusion.file)
+  
+  # read cytoband annotation
+  cytobands <- .ReadCytobandFile()
+  
+  # read exon annotation
+  message("Loading annotation")
+  
+  exons <- .ReadExonAnnotationFile(fusionsTable = fusions)
+  # read protein domain annotation
+  proteinDomains <- .ReadProteinDomainsFile()
+  ##drawing functions
+  # subjAlignedBam <- "/media/respaldo4t/RNAseq/39738/39738_Aligned.bam"
+  # Rsamtools::sortBam(file = subjAlignedBam, destination = stringr::str_replace(subjAlignedBam, ".bam","SortedByCoord"))
+  # subjAlignedBam <- stringr::str_replace(subjAlignedBam, ".bam","SortedByCoord.bam")
+  # Rsamtools::indexBam(subjAlignedBam)
+  
+  FusionsPlot(
+    fusionTable = fusions,
+    exons = exons,
+    cytobands = cytobands,
+    alignmentsFile =  sbjBamFile,
+    proteinDomains = proteinDomains,
+    ...)
+  
 }

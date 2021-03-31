@@ -18,7 +18,7 @@ between <- function(value, start, end) {
 #' .ReadArribaFustionTable
 #' Read and format arriba output fusion table
 #' @param fusionFile string with the full path of the Fussion.tsv table
-.ReadArribaFustionTable <-function(fusionsFile ){
+.ReadArribaFusionTable <-function(fusionsFile ){
   fusions <- read.table(fusionsFile, stringsAsFactors=F, sep="\t", header=T, comment.char="", quote="")
   if (colnames(fusions)[1] == "X.gene1") { # Arriba output
     colnames(fusions)[colnames(fusions) %in% c("X.gene1", "strand1.gene.fusion.", "strand2.gene.fusion.")] <- c("gene1", "strand1", "strand2")
@@ -85,10 +85,10 @@ return(invisible(fusions))
   ##--------
 
   exonsFile <- file.path(software$annotation,"GENCODE19.gtf")
-  # exons <- read.table(exonsFile, header=F, sep="\t", comment.char="#", quote="", stringsAsFactors=F)[,c(1, 3, 4, 5, 7, 9)]
-  exons <- data.table::fread(paste0("grep -v '^#' ",exonsFile),
-                             nThread = 4,
-                             header=F, sep="\t", quote="", stringsAsFactors=F)[,c(1, 3, 4, 5, 7, 9)]
+  exons <- read.table(exonsFile, header=F, sep="\t", comment.char="#", quote="", stringsAsFactors=F)[,c(1, 3, 4, 5, 7, 9)]
+  # exons <- data.table::fread(paste0("grep -v '^#' ",exonsFile),
+  #                            nThread = 4,
+  #                            header=F, sep="\t", quote="", stringsAsFactors=F)[,c(1, 3, 4, 5, 7, 9)]
   colnames(exons) <- c("contig", "type", "start", "end", "strand", "attributes")
   exons <- exons[exons$type %in% c("exon", "CDS"),]
   exons$contig <- removeChr(exons$contig)

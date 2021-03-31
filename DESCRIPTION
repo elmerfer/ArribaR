@@ -14,7 +14,9 @@ Imports:
     openxlsx,
     BiocParallel,
     plyr,
-    Rsamtools
+    Rsamtools,
+    GenomicRanges,
+    GenomicAlignments
 Suggests: 
     knitr, 
     rmarkdown
