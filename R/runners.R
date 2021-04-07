@@ -1,5 +1,5 @@
 ##Test Arriba pipeline (STAR + arriba + feature + MIXTURE)
-#'runSTAR
+#'RunSTAR
 #' This function will run STAR software
 #' @param sbjFile string with the full path and name of the xxxx_1_fastq or gz sequence file. This
 #' function only support paired data
@@ -7,10 +7,10 @@
 #' @author Elmer A. Fernández
 #' @examples
 #' \dontrun{
-#' test.subject <- getArribaRTest()
-#' bam.subject <- runSTAR(test.subject)
+#' test.subject <- GetArribaRTest()
+#' bam.subject <- RunSTAR(test.subject)
 #' }
-runSTAR <- function(sbjFile){
+RunSTAR <- function(sbjFile){
   software <- .OpenConfigFile()
   ##-------- ESTO SE DEBE REEMPLAZAR CON LA LINEA DE ARRIBA
   cat(paste0("\nCurrent STAR version : ", software$star$version, "\n"))
@@ -51,8 +51,11 @@ runSTAR <- function(sbjFile){
   }
   return(out.file)
 }
-
-getArribaRTest <- function(){
+#' GetArribaRTest
+#' This function will retrieve the test files coming with the arriba software
+#' @usage test.files <- GetArribaRTest()
+#' @return an string with the full path of the firs read file of the test
+GetArribaRTest <- function(){
   software <- .OpenConfigFile()
   files <- list.files(paste0(software$arriba$path,"/test"),full.names = T)
   id.fastq <- which(stringr::str_detect(files,"read1.fastq.gz"))
@@ -72,7 +75,7 @@ if(length(id.fastq)>0){
   return(NULL)
 }
 
-#' runArriba
+#' RunArriba
 #' this function will run the gene fusion detection ARRIBA software
 #' @references  \url{https://genome.cshlp.org/content/early/2021/02/11/gr.257246.119}{Uhrig et al.}
 #' @param sbjBamFile string with the full file name of the subject BAM file
@@ -82,12 +85,12 @@ if(length(id.fastq)>0){
 #' \url{https://arriba.readthedocs.io/en/latest/output-files/}{see details in Arriba output files}
 #' @examples
 #' \dontrun{
-#' test.subject <- getArribaRTest()
-#' bam.subject <- runSTAR(test.subject)
-#' Fusions <- runArriba(bam.subject)
+#' test.subject <- GetArribaRTest()
+#' bam.subject <- RunSTAR(test.subject)
+#' Fusions <- RunArriba(bam.subject)
 #' View(Fusions)
 #' }
-runArriba <- function(sbjBamFile){
+RunArriba <- function(sbjBamFile){
   software <- .OpenConfigFile()
   ##-------- ESTO SE DEBE REEMPLAZAR CON LA LINEA DE ARRIBA
 
@@ -132,7 +135,7 @@ runArriba <- function(sbjBamFile){
 #' @param remove boolean (default  TRUE), if unsorted bam file should be removed or not.
 #' @export
 #' @seealso \code{\link{Rsamtools::sortBam}}
-runSortIndexBam <- function(sbjBamFile, remove = T){
+RunSortIndexBam <- function(sbjBamFile, remove = T){
   software <- .OpenConfigFile()
   if(!file.exists(sbjBamFile)){
     stop(paste0("\nERROR ",sbjBamFile," NOT FOUND"))

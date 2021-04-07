@@ -1,6 +1,7 @@
 # read fusions
 
 
+.ArribaEnvironment <- new.env(parent = emptyenv())
 
 # convenience functions to add/remove "chr" prefix
 addChr <- function(contig) {
@@ -58,6 +59,9 @@ between <- function(value, start, end) {
 return(invisible(fusions))
 }
 
+#' .ReadCytobandFile
+#' Internal function. Read cytoband information
+#' @param fusionFile string with the full path of the Fussion.tsv table
 .ReadCytobandFile <- function(){
   software <- .OpenConfigFile()
   ##-----------
@@ -65,13 +69,18 @@ return(invisible(fusions))
 
   ##--------
   ##------------
-
-  cytobandsFile <- list.files(software$arriba$database, full.names = TRUE)
-  cytobandsFile <- cytobandsFile[stringr::str_detect(cytobandsFile, "cytobands")]
-  cytobandsFile <- cytobandsFile[stringr::str_detect(cytobandsFile, software$arriba$assemblyVersion)]
+  if(!exists("cytobands", envir = .ArribaEnvironment, inherits = FALSE)){
+    message("Loading cytobands")
+    cytobandsFile <- list.files(software$arriba$database, full.names = TRUE)
+    cytobandsFile <- cytobandsFile[stringr::str_detect(cytobandsFile, "cytobands")]
+    cytobandsFile <- cytobandsFile[stringr::str_detect(cytobandsFile, software$arriba$assemblyVersion)]
     cytobands <- read.table(cytobandsFile, header=T, colClasses=c("character", "numeric", "numeric", "character", "character"))
     cytobands <- cytobands[order(cytobands$contig, cytobands$start, cytobands$end),]
-
+    .ArribaEnvironment$cytobands <- cytobands
+  }else{
+    message("cytobands already loaded")
+    cytobands <- .ArribaEnvironment$cytobands
+  }
   return(cytobands)
 }
 
@@ -83,30 +92,60 @@ return(invisible(fusions))
   ##-------- ESTO SE DEBE REEMPLAZAR CON LA LINEA DE ARRIBA
 
   ##--------
-
-  exonsFile <- file.path(software$annotation,"GENCODE19.gtf")
-  exons <- read.table(exonsFile, header=F, sep="\t", comment.char="#", quote="", stringsAsFactors=F)[,c(1, 3, 4, 5, 7, 9)]
-  # exons <- data.table::fread(paste0("grep -v '^#' ",exonsFile),
-  #                            nThread = 4,
-  #                            header=F, sep="\t", quote="", stringsAsFactors=F)[,c(1, 3, 4, 5, 7, 9)]
-  colnames(exons) <- c("contig", "type", "start", "end", "strand", "attributes")
-  exons <- exons[exons$type %in% c("exon", "CDS"),]
-  exons$contig <- removeChr(exons$contig)
-
-  parseGtfAttribute <- function(attribute, exons) {
-    parsed <- gsub(paste0(".*", attribute, " \"?([^;\"]+)\"?;.*"), "\\1", exons$attributes)
-    failedToParse <- parsed == exons$attributes
-    if (any(failedToParse)) {
-      warning(paste0("Failed to parse '", attribute, "' attribute of ", sum(failedToParse), " GTF record(s)."))
-      parsed <- ifelse(failedToParse, "", parsed)
+  if(!exists("exons", envir = .ArribaEnvironment, inherits = FALSE)){
+    message("Loading exons")
+    exonsFile <- file.path(software$annotation,"GENCODE19.gtf")
+    exons <- read.table(exonsFile, header=F, sep="\t", comment.char="#", quote="", stringsAsFactors=F)[,c(1,2, 3, 4, 5, 7, 9)]
+    # exons <- data.table::fread(paste0("grep -v '^#' ",exonsFile),
+    #                            nThread = 4,
+    #                            header=F, sep="\t", quote="", stringsAsFactors=F)[,c(1, 3, 4, 5, 7, 9)]
+    colnames(exons) <- c("contig", "source" ,"type", "start", "end", "strand", "attributes")
+    exons <- exons[exons$type %in% c("exon", "CDS"),]
+    exons$contig <- removeChr(exons$contig)
+    
+    parseGtfAttribute <- function(attribute, exons) {
+      parsed <- gsub(paste0(".*", attribute, " \"?([^;\"]+)\"?;.*"), "\\1", exons$attributes)
+      failedToParse <- parsed == exons$attributes
+      if (any(failedToParse)) {
+        warning(paste0("Failed to parse '", attribute, "' attribute of ", sum(failedToParse), " GTF record(s)."))
+        parsed <- ifelse(failedToParse, "", parsed)
+      }
+      return(parsed)
     }
-    return(parsed)
+    exons$geneID <- parseGtfAttribute("gene_id", exons)
+    exons$geneName <- parseGtfAttribute("gene_name", exons)
+    exons$geneName <- ifelse(exons$geneName == "", exons$geneID, exons$geneName)
+    exons$transcript <- parseGtfAttribute("transcript_id", exons)
+    exons$exonNumber <- ifelse(rep(printExonLabels, nrow(exons)), parseGtfAttribute("exon_number", exons), "")    
+    
+    .ArribaEnvironment$exons <- exons
+  }else{
+    message("Using preloaded exons")
+    exons <- .ArribaEnvironment$exons
   }
-  exons$geneID <- parseGtfAttribute("gene_id", exons)
-  exons$geneName <- parseGtfAttribute("gene_name", exons)
-  exons$geneName <- ifelse(exons$geneName == "", exons$geneID, exons$geneName)
-  exons$transcript <- parseGtfAttribute("transcript_id", exons)
-  exons$exonNumber <- ifelse(rep(printExonLabels, nrow(exons)), parseGtfAttribute("exon_number", exons), "")
+  # exonsFile <- file.path(software$annotation,"GENCODE19.gtf")
+  # exons <- read.table(exonsFile, header=F, sep="\t", comment.char="#", quote="", stringsAsFactors=F)[,c(1, 3, 4, 5, 7, 9)]
+  # # exons <- data.table::fread(paste0("grep -v '^#' ",exonsFile),
+  # #                            nThread = 4,
+  # #                            header=F, sep="\t", quote="", stringsAsFactors=F)[,c(1, 3, 4, 5, 7, 9)]
+  # colnames(exons) <- c("contig", "type", "start", "end", "strand", "attributes")
+  # exons <- exons[exons$type %in% c("exon", "CDS"),]
+  # exons$contig <- removeChr(exons$contig)
+  # 
+  # parseGtfAttribute <- function(attribute, exons) {
+  #   parsed <- gsub(paste0(".*", attribute, " \"?([^;\"]+)\"?;.*"), "\\1", exons$attributes)
+  #   failedToParse <- parsed == exons$attributes
+  #   if (any(failedToParse)) {
+  #     warning(paste0("Failed to parse '", attribute, "' attribute of ", sum(failedToParse), " GTF record(s)."))
+  #     parsed <- ifelse(failedToParse, "", parsed)
+  #   }
+  #   return(parsed)
+  # }
+  # exons$geneID <- parseGtfAttribute("gene_id", exons)
+  # exons$geneName <- parseGtfAttribute("gene_name", exons)
+  # exons$geneName <- ifelse(exons$geneName == "", exons$geneID, exons$geneName)
+  # exons$transcript <- parseGtfAttribute("transcript_id", exons)
+  # exons$exonNumber <- ifelse(rep(printExonLabels, nrow(exons)), parseGtfAttribute("exon_number", exons), "")
   if(missing(fusionsTable)){
     return(exons)
   }
@@ -139,18 +178,25 @@ return(invisible(fusions))
   ##-----------
   ##-------- ESTO SE DEBE REEMPLAZAR CON LA LINEA DE ARRIBA
   ##--------
-  proteinDomainsFile <- list.files(software$arriba$database, full.names = TRUE)
-  proteinDomainsFile <- proteinDomainsFile[stringr::str_detect(proteinDomainsFile,"protein")]
-  proteinDomainsFile <- proteinDomainsFile[stringr::str_detect(proteinDomainsFile,software$arriba$assemblyVersion)]
+  if(!exists("proteinDomains", envir = .ArribaEnvironment, inherits = FALSE)){
+    proteinDomainsFile <- list.files(software$arriba$database, full.names = TRUE)
+    proteinDomainsFile <- proteinDomainsFile[stringr::str_detect(proteinDomainsFile,"protein")]
+    proteinDomainsFile <- proteinDomainsFile[stringr::str_detect(proteinDomainsFile,software$arriba$assemblyVersion)]
 
-    message("Loading protein domains")
+    message("Loading protein domains from file")
     proteinDomains <- read.table(proteinDomainsFile, header=F, sep="\t", comment.char="", quote="", stringsAsFactors=F)[,c(1,4,5,7,9)]
     colnames(proteinDomains) <- c("contig", "start", "end", "strand", "attributes")
     proteinDomains$color <- sub(";.*", "", sub(".*color=", "", proteinDomains$attributes, perl=T), perl=T)
     proteinDomains$proteinDomainName <- sapply(sub(";.*", "", sub(".*Name=", "", proteinDomains$attributes, perl=T), perl=T), URLdecode)
     proteinDomains$proteinDomainID <- sub(";.*", "", sub(".*protein_domain_id=", "", proteinDomains$attributes, perl=T), perl=T)
     proteinDomains <- proteinDomains[,colnames(proteinDomains) != "attributes"]
- return(proteinDomains)
+    .ArribaEnvironment$proteinDomains <- proteinDomains
+    
+  }else{
+    message("protein domains already loaded")
+    proteinDomains <- .ArribaEnvironment$proteinDomains
+  }
+  return(proteinDomains)
 }
 
 
