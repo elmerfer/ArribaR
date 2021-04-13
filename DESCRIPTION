@@ -16,7 +16,8 @@ Imports:
     plyr,
     Rsamtools,
     GenomicRanges,
-    GenomicAlignments
+    GenomicAlignments,
+    rtracklayer
 Suggests: 
     knitr, 
     rmarkdown
