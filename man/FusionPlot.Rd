@@ -19,6 +19,16 @@ _Fusion.xlsx table. Default missing (will plot all the fusions), otherwise it wi
 FusionPlot 
 This function provides gene fusion visualization
 }
+\examples{
+\dontrun{
+test.subject <- GetArribaRTest()
+bam.subject <- RunSTAR(test.subject)
+Fusions <- RunArriba(bam.subject)
+bam.sorted.subject <- RunSortIndexBam(bam.subject)
+FusionPlot(bam.sorted.subject)
+}
+
+}
 \seealso{
-runArriba
+\code{\link{runArriba}}
 }

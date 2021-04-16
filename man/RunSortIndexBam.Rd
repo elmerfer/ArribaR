@@ -17,5 +17,5 @@ runSortIndexBam
 This function will built the sorted bam file and its index.
 }
 \seealso{
-\code{\link{Rsamtools::sortBam}}
+\code{\link[Rsamtools]{sortBam}}
 }

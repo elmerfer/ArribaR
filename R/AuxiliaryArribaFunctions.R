@@ -121,7 +121,7 @@ return(invisible(fusions))
     .ArribaEnvironment$exons <- exons
   }else{
     message("Using preloaded exons")
-    exons <- .ArribaEnvironment$exons
+    exons <- .ArribaEnvironment$exons[,]
   }
   # exonsFile <- file.path(software$annotation,"GENCODE19.gtf")
   # exons <- read.table(exonsFile, header=F, sep="\t", comment.char="#", quote="", stringsAsFactors=F)[,c(1, 3, 4, 5, 7, 9)]
@@ -166,7 +166,8 @@ return(invisible(fusions))
       geneName=intergenicBreakpoints$gene,
       geneID=intergenicBreakpoints$gene,
       transcript=intergenicBreakpoints$gene,
-      exonNumber="intergenic"
+      exonNumber="intergenic", 
+      source = ""
     ))
   }
  return(exons)

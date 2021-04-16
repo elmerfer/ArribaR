@@ -12,9 +12,21 @@ ft <- GetCounts("my.aligned_bam", feature = "exon")
 
 \item{feature}{string indicating if exons or genes are returned}
 
+\item{annotSource}{string possible values are "GENCODE19" or "inbuilt". If GENECODE19, it will use GENOCDE from Arriba software, if "inbuilt" it will use as in \code{\link[Rsubread]{featureCounts}}}
+
 \item{nthreads}{integer, total of treads to use, default parallel::detectCores() -1}
+}
+\value{
+an extended object as returned by \code{\link[Rsubread]{featureCounts}}, the extension include in the targets slots the feature extracted (exon or gene)
 }
 \description{
 GetCounts
 it estimate the gene counts wrapping the Rsubread::featureCounts function
+}
+\examples{
+\dontrun{
+test.subject <- GetArribaRTest()
+bam.subject <- RunSTAR(test.subject)
+ft <- GetCounts(bam.subject)
+}
 }

@@ -1,8 +1,23 @@
 ##Test Arriba pipeline (STAR + arriba + feature + MIXTURE)
+
+.SetThreads <- function(nThreads){
+  if(missing(nThreads)){
+    nThreads <- parallel::detectCores()-2
+  }
+  if(nThreads>parallel::detectCores()){
+    nThreads <- parallel::detectCores()-2
+  }
+  if(nThreads < 0){
+    nThreads <- parallel::detectCores()
+  }
+  return(nThreads)
+}
+
 #'RunSTAR
 #' This function will run STAR software
 #' @param sbjFile string with the full path and name of the xxxx_1_fastq or gz sequence file. This
 #' function only support paired data
+#' @param nThreads number of CPUs threads 
 #' @export
 #' @author Elmer A. Fernández
 #' @examples
@@ -10,7 +25,7 @@
 #' test.subject <- GetArribaRTest()
 #' bam.subject <- RunSTAR(test.subject)
 #' }
-RunSTAR <- function(sbjFile){
+RunSTAR <- function(sbjFile, nThreads){
   software <- .OpenConfigFile()
   ##-------- ESTO SE DEBE REEMPLAZAR CON LA LINEA DE ARRIBA
   cat(paste0("\nCurrent STAR version : ", software$star$version, "\n"))
@@ -23,9 +38,18 @@ RunSTAR <- function(sbjFile){
   }
   out.file <- stringr::str_remove(file1,".gz")
   out.file <- stringr::str_replace(out.file,"_1.fastq",software$star$alignmentPrefix)
-
+  
+  
+  nThreads <- .SetThreads(nThreads)
+  
+   if(nThreads < 4){
+     message(paste0("STAR running on ",nThreads, " may be not optimal"))
+   }else{
+     message(paste0("STAR running on ",nThreads))
+   }
+  # 
   system2(command = software$star$command,
-          args = c("--runThreadN 8",
+          args = c(paste0("--runThreadN ",nthreads),
                    paste0("--genomeDir " ,software$arriba$genomeDir),
                    paste0("--readFilesIn ",file1, " ", file2),
                    paste0("--readFilesCommand ", ifelse(stringr::str_detect(file1,".gz"),"zcat","-")),
@@ -102,9 +126,7 @@ RunArriba <- function(sbjBamFile){
 
   fusion.file <- stringr::str_replace(sbjBamFile,software$star$alignmentPrefix,"_Fusions.tsv")
   fusion.discarded.file <- stringr::str_replace(sbjBamFile,software$star$alignmentPrefix,"_Fusions_discarded.tsv")
-  if(!all(file.exists(fusion.file,fusion.discarded.file))){
-    cat(paste0("\nFILES NOT FOUND\n",fusion.file,"\n", fusion.discarded.file,"\nPls use runSTAR(subject)\n"))
-  }
+  
    system2(command = software$arriba$command,
            args = c(paste0("-x ",sbjBamFile),
                     paste0("-o ",fusion.file),
@@ -116,9 +138,16 @@ RunArriba <- function(sbjBamFile){
                     paste0("-t ", normalizePath(file.path(software$arriba$database,"known_fusions_hg19_hs37d5_GRCh37_v2.1.0.tsv.gz"))),
                     paste0("-p ", normalizePath(file.path(software$arriba$database,"protein_domains_hg19_hs37d5_GRCh37_v2.1.0.gff3")))
            ))
+   
+   if(!all(file.exists(fusion.file,fusion.discarded.file))){
+     cat(paste0("\nFUSION FILES NOT FOUND\n",fusion.file,"\n", fusion.discarded.file))
+   }
   ##write as an excel file
-  fusionsTable <- .ReadArribaFustionTable(fusion.file)
-  openxlsx::write.xlsx(fusionsTable, stringr::str_replace(fusion.file,".tsv",".xlsx"))
+  fusionsTable <- .ReadArribaFusionTable(fusion.file)
+  version.info <- data.frame(  STAR = c(software$star$version), 
+                             ARRIBA = c(software$arriba$version, software$arriba$assemblyVersion,"GENCODE19",packageVersion("ArribaR")),
+                             SAMPLE = c(stingr::str_remove(basename(fusion.file),"_Fusions.tsv")))
+  openxlsx::write.xlsx(list(Fusions=fusionsTable,Info=version.info), stringr::str_replace(fusion.file,".tsv",".xlsx"))
   #return(fusionsTable) ##for continuous processing into R
   # if(!stringr::str_detect(sbjBamFile,software$star$alignmentPrefixSorted)){
   #   Rsamtools::sortBam(file = sbjBamFile,
@@ -126,7 +155,7 @@ RunArriba <- function(sbjBamFile){
   #   test.out <- stringr::str_replace(sbjBamFile, software$star$aligmentPrefix,software$star$alignmentPrefixSorted)
   #   Rsamtools::indexBam(test.out)
   # }
-  return(fusionsTable)
+  return(invisible(fusionsTable))
 }
 
 #' runSortIndexBam
@@ -134,7 +163,7 @@ RunArriba <- function(sbjBamFile){
 #' @param sbjBamFile string full path of aligned bam file see \code{\link[runSTAR]{runSTAR}}
 #' @param remove boolean (default  TRUE), if unsorted bam file should be removed or not.
 #' @export
-#' @seealso \code{\link{Rsamtools::sortBam}}
+#' @seealso \code{\link[Rsamtools]{sortBam}}
 RunSortIndexBam <- function(sbjBamFile, remove = T){
   software <- .OpenConfigFile()
   if(!file.exists(sbjBamFile)){
@@ -166,3 +195,32 @@ RunSortIndexBam <- function(sbjBamFile, remove = T){
 
 }
 
+#' RunAnalysis
+#' 
+#' An all in one line to run STAR+Arriba+MIXTURE 
+#' @param sbjFile (character) full path to the first fasta file from a subject (subject_1.fastq or subject_1.fastq.gz ), the scond read file should be subject_2.fastq
+#' @param feature (character)  "exon" or "gene". it will be overwritten with "gene" if immuneTME == TRUE
+#' @param immuneTME (logical (default TRUE) should the \code{\link[MIXTURE]{MIXTURE}} algorithm be run?
+#' @export
+#' @return a list with the following slots:
+#' 
+#' Fusions : a Gene Fusion data (also in an excel file see \code{\link{RunArriba}})
+#' 
+#' Counts : a list as returned by \code{\link{GetCounts}}
+#' 
+#' iTME : immune tumor microenvironment objets as returned by \code{\link{GetImmuneContent}}
+#' @examples 
+#' \dontrun{
+#' results <- RunAnalysis(sbjFile = subject_1.fastq.gz)
+#' ##if a do not want to run TME and get the exon counts
+#' results <- RunAnalysis(sbjFile = subject_1.fastq.gz, feature = "exon" , immuneTME = FALSE)
+#' }
+RunAnalysis <- function(sbjFile , feature , immuneTME = TRUE){
+  bam.subject <- RunSTAR(sbjFile)
+  Fusions <- RunArriba(bam.subject)
+  ft <- GetCounts(bam.subject, feature = ifelse(immuneTME,"gene",feature))
+  if(immuneTME){
+    ct <- GetImmuneContent(ftc = ft, filter = 0, plot = FALSE)
+  }
+  return(invisible(list(Fusions = Fusions, Counts = ft, iTME = ct)))
+}

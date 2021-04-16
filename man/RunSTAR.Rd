@@ -5,11 +5,13 @@
 \title{RunSTAR
 This function will run STAR software}
 \usage{
-RunSTAR(sbjFile)
+RunSTAR(sbjFile, nThreads)
 }
 \arguments{
 \item{sbjFile}{string with the full path and name of the xxxx_1_fastq or gz sequence file. This
 function only support paired data}
+
+\item{nThreads}{number of CPUs threads}
 }
 \description{
 RunSTAR

@@ -1103,7 +1103,15 @@ findExons <- function(exons, contig, gene, direction, breakpoint, coverage, tran
 #' @param gene1 string with geneID as returned by \code{\link{RunArriba}} 
 #' _Fusion.xlsx table. Default missing (will plot all the fusions), otherwise it will only plot all the fusions where this gene is present
 #' @param gene2 idem as gene1. If both gene1 and gene2 are set, only the fusions including those genes will be plotted
-#' @seealso runArriba
+#' @seealso \code{\link{runArriba}}
+#' @examples 
+#' \dontrun{
+#' test.subject <- GetArribaRTest()
+#' bam.subject <- RunSTAR(test.subject)
+#' Fusions <- RunArriba(bam.subject)
+#' bam.sorted.subject <- RunSortIndexBam(bam.subject)
+#' FusionPlot(bam.sorted.subject)
+#' }
 #' 
 FusionPlot <- function(sbjBamFile,gene1,gene2){
   darkColor1 <- getDarkColor(color1)

@@ -1,6 +1,6 @@
 Package: ArribaR
 Type: Package
-Title: What the Package Does (Title Case)
+Title: gene Expression quantification, Gene Fusion detection and Immuno Content Deconvolution by STAR and ARRIBA softwares
 Version: 0.1.0
 Author: Elmer A. Fernández
 Maintainer: Elmer A. Fernández <efernandez@cidie.ucc.edu.ar>
