@@ -1,7 +1,7 @@
 # ArribaR
-ArribaR is an R based platform for Gene Expression and Gene Fusion identification based on the STAR aligner and the Arriba fusion detector.
-It is part of an analitycal suite for the study of genomic rearrangements, its potential as target therapy, their neoantigenic roles and the immune microenvironment by [MIXTURE](https://github.com/elmerfer/MIXTURE)
-The ArribaR software package is intended to provide a friendly and effortless R tool for non bioinformatics. It isolates all the requirements to run both softwares in an easy and transparent fashion, simplifying the installation process and execusion.
+ArribaR is an R based platform for Gene Expression and Gene Fusion identification based on the [STAR](https://github.com/alexdobin/STAR) aligner and the [Arriba](https://arriba.readthedocs.io/en/latest/) fusion detector.
+It is part of an analytical suite for the study of genomic rearrangements, its potential as target therapy and as neoantigenic role. In addition it may provide the immune microenvironment by [MIXTURE](https://github.com/elmerfer/MIXTURE) by the LM22 molecular signature
+The ArribaR software package is intended to provide a friendly and effortless R tool for non bioinformatics. It isolates all the requirements to run both softwares in an easy and transparent fashion, simplifying the installation process and execution.
 It automatically download and install the basic softwares (STAr + Arriba) and all the required extra files like the GRCh37 assembly and GENCODE19 annotation as suggested by Arriba.
 
 ## Getting Started
@@ -31,7 +31,11 @@ as a result it will leave an organized "Software" folder at where/I/want/to/inst
 This implementation is specifically provided to process human RNAseq paired data, thus requiring to hold both xxxx_1.fastq(.gz) and xxxx_2.fastq(.gz).
 The row sequencing data should be "xxxxx_1.fastq" or "xxxxx_1.fastq.gz". The second sequen file will be automatically defined as "xxxxx_2.fastq" or "xxxxx_2.fastq.gz"
 ```
-runAnalisis("my_1.fastq.gz") 
+library(ArribaR)
+results <- runAnalysis("my_1.fastq.gz") 
+View(results$Fusions)
+head(results$Counts)
+View(MIXTURE::GetMixture(results$iTME))
 ```
 
 # Authors

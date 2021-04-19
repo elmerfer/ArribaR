@@ -96,7 +96,7 @@ GetImmuneContent <- function(ftc, filter = 0, plot = TRUE){
   if(any(stringr::str_detect(ftc$targets,"gene"))==FALSE){
     stop("ERROR: ftc should contain gene counts")
   }
-
+  require(ggplot2)
     dups <- which(duplicated(ftc$annotation$gene_name))
     counts <- ftc$counts[-dups]
     cn <- ftc$annotation$gene_name[-dups]
@@ -115,9 +115,9 @@ GetImmuneContent <- function(ftc, filter = 0, plot = TRUE){
     tpm <- as.data.frame(tpm)
     colnames(tpm) <- colnames(ftc$counts)
     rownames(tpm) <- cn
-    ct <- MIXTURE(expressionMatrix = TPMs[,,drop=F], useCores = 1L)
+    ct <- MIXTURE::MIXTURE(expressionMatrix = TPMs[,,drop=F], useCores = 1L)
     if(plot){
-      prop <- GetMixture(ct)
+      prop <- MIXTURE::GetMixture(ct)
       df <- data.frame(Proportions = as.vector(prop), Cells = colnames(prop))
       p <- ggplot2::ggplot(df, aes(x=Proportions, y = Cells)) + ggplot2::geom_bar(stat = "identity") +  ggplot2::scale_x_continuous(limits = c(0, 1)) + 
         ggplot2::ggtitle(paste0("Subject : ",unlist(stringr::str_split(rownames(prop),"_"))[1]))
