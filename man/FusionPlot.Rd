@@ -8,7 +8,7 @@ This function provides gene fusion visualization}
 FusionPlot(sbjBamFile,gene1,gene2)
 }
 \arguments{
-\item{sbjBamFile}{string with full path of the processed and sorted bam file processed by runSTAR and runArriba}
+\item{sbjBamFile}{string with full path of the processed and sorted bam file processed by RunSTAR and RunArriba}
 
 \item{gene1}{string with geneID as returned by \code{\link{RunArriba}} 
 _Fusion.xlsx table. Default missing (will plot all the fusions), otherwise it will only plot all the fusions where this gene is present}

@@ -93,9 +93,9 @@ InstallArribaR <- function(extDir){
   R.utils::gunzip(filename = normalizePath(file.path(software$assembly,"GRCh37.fa.gz")),
         remove = T)
 
-  argum <- paste0("sed -e ", shQuote("s/^MT\\t/chrM\\t/")," -e ",shQuote("s/^\\([1-9XY]\\|[12][0-9]\\)\\t/\\1\\t/"), " ",
-                  normalizePath(file.path(software$assembly,"GRCh37.fa")))
-  system(command = argum, ignore.stdout = T)
+  # argum <- paste0("sed -e ", shQuote("s/^MT\\t/chrM\\t/")," -e ",shQuote("s/^\\([1-9XY]\\|[12][0-9]\\)\\t/\\1\\t/"), " ",
+  #                 normalizePath(file.path(software$assembly,"GRCh37.fa")))
+  # system(command = argum, ignore.stdout = T)
 
   if(file.exists(normalizePath(file.path(software$assembly,"GRCh37.fa")))){
     software$arriba$assemblyVersion <- "GRCh37"

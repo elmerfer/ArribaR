@@ -25,10 +25,12 @@
 #' test.subject <- GetArribaRTest()
 #' bam.subject <- RunSTAR(test.subject)
 #' }
-RunSTAR <- function(sbjFile, nThreads){
+RunSTAR <- function(sbjFile, nThreads, assemblyVersion = c("37","38")){
   software <- .OpenConfigFile()
   ##-------- ESTO SE DEBE REEMPLAZAR CON LA LINEA DE ARRIBA
   cat(paste0("\nCurrent STAR version : ", software$star$version, "\n"))
+  assemblyVersion <- paste0("GRCh",match.arg(as.character(assemblyVersion), choices = c("37","38")))
+  cat(paste0("\nChosen assembly version GRCh : ", assemblyVersion, "\n"))
   ##--------
   file1 <- sbjFile
   file2 <- stringr::str_replace(file1,"_1.fastq","_2.fastq")
@@ -47,10 +49,13 @@ RunSTAR <- function(sbjFile, nThreads){
    }else{
      message(paste0("STAR running on ",nThreads))
    }
-  # 
+  genomeDir <- paste0(software$assembly,"/STAR_",assemblyVersion)
+  genomeDir <- ifelse(assemblyVersion == "GRCh37",paste0(genomeDir,"_GENCODE19_index"),
+                      paste0(genomeDir,"_GENCODE38_index"))
+  
   system2(command = software$star$command,
-          args = c(paste0("--runThreadN ",nthreads),
-                   paste0("--genomeDir " ,software$arriba$genomeDir),
+          args = c(paste0("--runThreadN ",nThreads),
+                   paste0("--genomeDir " ,genomeDir),
                    paste0("--readFilesIn ",file1, " ", file2),
                    paste0("--readFilesCommand ", ifelse(stringr::str_detect(file1,".gz"),"zcat","-")),
                    "--outStd BAM_Unsorted",
@@ -73,6 +78,7 @@ RunSTAR <- function(sbjFile, nThreads){
   if(!file.exists(out.file)){
     stop("ERROR aligment")
   }
+  attr(out.file,"assemblyVersion") <- assemblyVersion
   return(out.file)
 }
 #' GetArribaRTest
@@ -115,6 +121,11 @@ if(length(id.fastq)>0){
 #' View(Fusions)
 #' }
 RunArriba <- function(sbjBamFile){
+  assemblyVersion <- attr(sbjBamFile,"assemblyVersion")
+  if(is.null(assemblyVersion)){
+    stop("\nPlease process the subject by RunSTAR")
+  }
+  
   software <- .OpenConfigFile()
   ##-------- ESTO SE DEBE REEMPLAZAR CON LA LINEA DE ARRIBA
 
@@ -127,16 +138,22 @@ RunArriba <- function(sbjBamFile){
   fusion.file <- stringr::str_replace(sbjBamFile,software$star$alignmentPrefix,"_Fusions.tsv")
   fusion.discarded.file <- stringr::str_replace(sbjBamFile,software$star$alignmentPrefix,"_Fusions_discarded.tsv")
   
+  genomeversion <- ifelse(assemblyVersion == "GRCh37", "hg19_hs37d5_","hg38_")
+  
    system2(command = software$arriba$command,
            args = c(paste0("-x ",sbjBamFile),
                     paste0("-o ",fusion.file),
                     paste0("-O ",fusion.discarded.file),
-                    paste0("-a ",software$assembly,"/GRCh37.fa"),
-                    paste0("-g ", software$annotation,"/GENCODE19.gtf"),
-                    paste0("-b ", normalizePath(file.path(software$arriba$database,"blacklist_hg19_hs37d5_GRCh37_v2.1.0.tsv.gz"))),
-                    paste0("-k ", normalizePath(file.path(software$arriba$database,"known_fusions_hg19_hs37d5_GRCh37_v2.1.0.tsv.gz"))),
-                    paste0("-t ", normalizePath(file.path(software$arriba$database,"known_fusions_hg19_hs37d5_GRCh37_v2.1.0.tsv.gz"))),
-                    paste0("-p ", normalizePath(file.path(software$arriba$database,"protein_domains_hg19_hs37d5_GRCh37_v2.1.0.gff3")))
+                    paste0("-a ",software$assembly,ifelse(assemblyVersion == "GRCh37","/GRCh37.fa","/GRCh38.fa")),
+                    paste0("-g ", software$annotation,ifelse(assemblyVersion == "GRCh37","/GENCODE19.gtf","/GENCODE38.gtf")),
+                    paste0("-b ", file.path(software$arriba$database,
+                                            paste0("blacklist_",genomeversion,assemblyVersion,"_v2.1.0.tsv.gz"))),
+                    paste0("-k ", file.path(software$arriba$database,
+                                            paste0("known_fusions_",genomeversion,assemblyVersion,"_v2.1.0.tsv.gz"))),
+                    paste0("-t ", file.path(software$arriba$database,
+                                            paste0("known_fusions_",genomeversion,assemblyVersion,"_v2.1.0.tsv.gz"))),
+                    paste0("-p ", file.path(software$arriba$database,
+                                            paste0("protein_domains_",genomeversion,assemblyVersion,"_v2.1.0.gff3")))
            ))
    
    if(!all(file.exists(fusion.file,fusion.discarded.file))){
@@ -145,8 +162,8 @@ RunArriba <- function(sbjBamFile){
   ##write as an excel file
   fusionsTable <- .ReadArribaFusionTable(fusion.file)
   version.info <- data.frame(  STAR = c(software$star$version), 
-                             ARRIBA = c(software$arriba$version, software$arriba$assemblyVersion,"GENCODE19",packageVersion("ArribaR")),
-                             SAMPLE = c(stingr::str_remove(basename(fusion.file),"_Fusions.tsv")))
+                             ARRIBA = c(software$arriba$version, assemblyVersion,packageVersion("ArribaR")),
+                             SAMPLE = c(stringr::str_remove(basename(fusion.file),"_Fusions.tsv")))
   openxlsx::write.xlsx(list(Fusions=fusionsTable,Info=version.info), stringr::str_replace(fusion.file,".tsv",".xlsx"))
   #return(fusionsTable) ##for continuous processing into R
   # if(!stringr::str_detect(sbjBamFile,software$star$alignmentPrefixSorted)){
