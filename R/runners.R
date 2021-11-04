@@ -165,6 +165,7 @@ RunArriba <- function(sbjBamFile){
                              ARRIBA = c(software$arriba$version, assemblyVersion,packageVersion("ArribaR")),
                              SAMPLE = c(stringr::str_remove(basename(fusion.file),"_Fusions.tsv")))
   openxlsx::write.xlsx(list(Fusions=fusionsTable,Info=version.info), stringr::str_replace(fusion.file,".tsv",".xlsx"))
+  file.remove(fusion.file)
   #return(fusionsTable) ##for continuous processing into R
   # if(!stringr::str_detect(sbjBamFile,software$star$alignmentPrefixSorted)){
   #   Rsamtools::sortBam(file = sbjBamFile,

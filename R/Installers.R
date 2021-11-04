@@ -206,7 +206,64 @@ InstallArribaR <- function(extDir){
 
 }
 
-
+##########3
+.InstallArribaOnGenomeDB <- function(){
+  
+  software <- GenomeDB:::.OpenConfigFile()
+  if(is.null(software)){
+    stop("Error ARRIBA")
+  }
+  if(!any(stringr::str_detect(names(software$Software), "STAR"))){
+    stop("STAR should be previously installed, use see Aligners library at github/elmerfer/Aligners")
+  }
+  if(any(stringr::str_detect(names(software$Software), "ARRIBA"))){
+    stop("ARRIBA already installed")
+  }
+  
+  # software$arriba$path <- file.path(software$mainPath,"Arriba")
+  software$Software$ARRIBA$main <-  file.path(software$Software$main,"ARRIBA")#to install softwar versions and index files
+  stopifnot(dir.create(software$Software$ARRIBA$main))
+  
+  
+  software$Sotware$ARRIBA$version <- "2.1.0"
+  tmp.destfile <- tempfile()
+  # "/media/respaldo4t/Softwares/arriba_v2.1.0.tar.gz"
+  download.file(url = "https://github.com/suhrig/arriba/releases/download/v2.1.0/arriba_v2.1.0.tar.gz",
+                method = "wget",
+                destfile = tmp.destfile, quite=T)
+  
+  arriba.files <- untar(tmp.destfile, list =T)
+  test.files <- arriba.files[stringr::str_detect(arriba.files,"test")]
+  
+  untar(tmp.destfile, files = test.files,
+        exdir = software$Software$ARRIBA$main,
+        extras = paste0("--strip-components ",1))
+  
+  database.files <- arriba.files[stringr::str_detect(arriba.files,"database")]
+  
+  software$Software$ARRIBA$database <- file.path(software$Software$ARRIBA$main, "database")
+  
+  untar(tmp.destfile, files = database.files,
+        exdir = software$Software$ARRIBA$main,
+        extras = paste0("--strip-components ",1))
+  if(all(file.exists(paste0(software$Software$ARRIBA$database,basename(database.files[-1]))))){
+    cat("Arriba database created")
+  }
+  
+  arriba.soft <- arriba.files[stringr::str_detect(arriba.files,"/arriba")]
+  arriba.soft <- arriba.soft[!stringr::str_detect(arriba.soft,"source")]
+  untar(tmp.destfile, files = arriba.soft,
+        exdir = software$Software$ARRIBA$main,
+        extras = paste0("--strip-components ",1))
+  software$Software$ARRIBA$command <- file.path(software$Software$ARRIBA$main,"arriba")
+  if(file.exists(software$Software$ARRIBA$command)){
+    system2(command = software$Software$ARRIBA$command, args = "-h")
+    GenomeDB:::.OpenConfigFile(software)
+  }else{
+    stop("ERROR arriba failed")
+  }
+  
+}
 
 
 
