@@ -201,6 +201,22 @@ return(invisible(fusions))
 }
 
 
-
+#' .StatsSTARfile
+#' reads and format the Log-final.out alignement statistics file
+#' This is an internal function, it should not be directly used
+#' @param bamFile the prefix_Aligned.out.bam or prefix_SortByCoordinates.bam file
+#' @return a data frame with the Log content
+.StatsSTARfile <- function(bamFile){
+  log.file <- list.files(dirname(bamFile), full.names = T)
+  log.file <- log.file[stringr::str_detect(log.file, "Log.final.out")]
+  ##get the statistics
+  sd <- plyr::ldply(readLines(log.file), function(x) {
+    if(stringr::str_length(x)<2) return(c(NA,NA))
+    ret <- unlist(stringr::str_split(x,"\t"))
+    if(length(ret)<2) return(c(ret,NA))
+    ret
+  })
+  return(sd)
+}
 
 

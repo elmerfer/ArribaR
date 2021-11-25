@@ -5,10 +5,12 @@
 \title{RunARRIBA
 this function will run the gene fusion detection ARRIBA software}
 \usage{
-RunARRIBA(sbjBamFile)
+RunARRIBA(sbjBamFile, allProteinPredictions = FALSE)
 }
 \arguments{
 \item{sbjBamFile}{string with the full file name of the subject BAM file}
+
+\item{allProteinPredictions}{if TRUE it will generate all the prediction of the discarded file. It may generate a very big discarded file. it is similar to set -X in the Arriba software}
 }
 \value{
 a data frame with the identified fusions

@@ -19,81 +19,22 @@
 #' attr(out.file,"ElapsedTime") 
 #' }
 RunSTARforARRIBA <- function(sbjFile, nThreads, version = "GRCh38+GENECODE"){
-  software <- GenomeDB:::.OpenConfigFile()
-  ##-------- ESTO SE DEBE REEMPLAZAR CON LA LINEA DE ARRIBA
-  cat(paste0("\nCurrent STAR version : ", software$star$version, "\n"))
-  # assemblyVersion <- paste0("GRCh",match.arg(as.character(assemblyVersion), choices = c("37","38")))
-  cat(paste0("\nChosen assembly version GRCh : ", version, "\n"))
-  ##--------
-  ##hay que revisar si es GZ
-  file1 <- sbjFile
-  if(stringr::str_detect(file1, "_R1.fastq")){
-    file2 <- stringr::str_replace(file1,"_R1.fastq","_R2.fastq")
-  }else{
-    if(stringr::str_detect(file1, "_1.fastq")){
-      file2 <- stringr::str_replace(file1,"_1.fastq","_2.fastq")
-    }else{
-      stop("unrecognizable file, it should be sbj_R1.fastq/.gz or sbj_1.fastq/.gz")
-    }
-  }
-  
-  cat(paste0("\nSubject files\n",file1,"\n",file2,"\n"))
-  if(!all(file.exists(file1,file2))){
-    stop("ERROR some files not found")
-  }
-  out.file <- file1
-  out.file <- stringr::str_remove(file1,".gz")
-  out.file <- stringr::str_replace(out.file,"1.fastq",software$Software$STAR$alignmentPrefix)
-  out.file <- paste0(out.file,".bam")
-  
-  
-  nThreads <- .SetThreads(nThreads)
-  
-  if(nThreads < 4){
-    message(paste0("STAR running on ",nThreads, " may be not optimal"))
-  }else{
-    message(paste0("STAR running on ",nThreads, " threads"))
-  }
-  genomeDir <- software$Software$STAR$main[version] #paste0(software$assembly,"/STAR_",assemblyVersion)
-  # genomeDir <- ifelse(assemblyVersion == "GRCh37",paste0(genomeDir,"_GENCODE19_index"),
-  #                     paste0(genomeDir,"_GENCODE38_index"))
-  t1 <- Sys.time()
-  system2(command = software$Software$STAR$command,
-          args = c(paste0("--runThreadN ",nThreads),
-                   paste0("--genomeDir " ,genomeDir),
-                   paste0("--readFilesIn ",file1, " ", file2),
-                   paste0("--readFilesCommand ", ifelse(stringr::str_detect(file1,".gz"),"zcat","-")),
-                   "--outStd BAM_Unsorted",
-                   "--outSAMtype BAM Unsorted",
-                   "--outSAMunmapped Within",
-                   "--outBAMcompression 0",
-                   "--outFilterMultimapNmax 50",
-                   "--peOverlapNbasesMin 10",
-                   "--alignSplicedMateMapLminOverLmate 0.5",
-                   "--alignSJstitchMismatchNmax 5 -1 5 5",
-                   "--chimSegmentMin 10",
-                   "--chimOutType WithinBAM HardClip",
-                   "--chimJunctionOverhangMin 10",
-                   "--chimScoreDropMax 30",
-                   "--chimScoreJunctionNonGTAG 0",
-                   "--chimScoreSeparation 1",
-                   "--chimSegmentReadGapMax 3",
-                   "--chimMultimapNmax 50"
-          ), stdout = out.file)
-  if(!file.exists(out.file)){
-    stop("ERROR aligment")
-  }
+  out.file <- Aligners::RunSTAR(sbjFile = sbjFile, nThreads = nThreads , species = "Human",version=version)
+  df.stat <- .StatsSTARfile(out.file)
   cat(paste0("Aligned STAR file : ",out.file))
   attr(out.file,"GenomeDB") <- version
   attr(out.file,"ElapsedTime") <- round(Sys.time() - t1,3)
+  attr(out.file,"STAR_STATS") <- df.stat
   return(out.file)
 }
 
 
+  
 #' RunARRIBA
 #' this function will run the gene fusion detection ARRIBA software
 #' @references  \url{https://genome.cshlp.org/content/early/2021/02/11/gr.257246.119}{Uhrig et al.}
 #' @param sbjBamFile string with the full file name of the subject BAM file
+#' @param allProteinPredictions if TRUE it will generate all the prediction of the discarded file. It may generate a very big discarded file. it is similar to set -X in the Arriba software
 #' @seealso \code{\link{runSTAR()}}
 #' @export
 #' @return a data frame with the identified fusions
@@ -105,7 +46,7 @@ RunSTARforARRIBA <- function(sbjFile, nThreads, version = "GRCh38+GENECODE"){
 #' Fusions <- RunArriba(bam.subject)
 #' View(Fusions)
 #' }
-RunARRIBA <- function(sbjBamFile){
+RunARRIBA <- function(sbjBamFile, allProteinPredictions = FALSE){
   assemblyVersion <- attr(sbjBamFile,"GenomeDB")
   if(is.null(assemblyVersion)){
     stop("\nPlease process the subject by RunSTAR")
@@ -146,7 +87,8 @@ RunARRIBA <- function(sbjBamFile){
                    paste0("-t ", file.path(software$Software$ARRIBA$database,
                                            paste0("known_fusions_",genomeversion,"_v2.1.0.tsv.gz"))),
                    paste0("-p ", file.path(software$Software$ARRIBA$database,
-                                           paste0("protein_domains_",genomeversion,"_v2.1.0.gff3")))
+                                           paste0("protein_domains_",genomeversion,"_v2.1.0.gff3"))),
+                   ifelse(allProteinPredictions,"-X","")
           ))
   
   if(!all(file.exists(fusion.file,fusion.discarded.file))){
@@ -159,7 +101,8 @@ RunARRIBA <- function(sbjBamFile){
                                ASSEMBLY =assemblyVersion,
                                ArribaR=packageVersion("ArribaR"),
                                SAMPLE = stringr::str_remove(basename(fusion.file),"_Fusions.tsv"))
-  openxlsx::write.xlsx(list(Fusions=fusionsTable,Info=version.info), stringr::str_replace(fusion.file,".tsv",".xlsx"))
+  openxlsx::write.xlsx(list(Fusions=fusionsTable,Info=version.info, 
+                       stats=attr(sbjBamFile,"STAR_STATS")), stringr::str_replace(fusion.file,".tsv",".xlsx"))
   file.remove(fusion.file)
   #return(fusionsTable) ##for continuous processing into R
   # if(!stringr::str_detect(sbjBamFile,software$star$alignmentPrefixSorted)){
