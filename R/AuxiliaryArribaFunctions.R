@@ -216,6 +216,7 @@ return(invisible(fusions))
     if(length(ret)<2) return(c(ret,NA))
     ret
   })
+  colnames(sd) <- c("Description","Value")
   return(sd)
 }
 

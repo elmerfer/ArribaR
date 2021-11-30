@@ -23,7 +23,6 @@ RunSTARforARRIBA <- function(sbjFile, nThreads, version = "GRCh38+GENECODE"){
   df.stat <- .StatsSTARfile(out.file)
   cat(paste0("Aligned STAR file : ",out.file))
   attr(out.file,"GenomeDB") <- version
-  attr(out.file,"ElapsedTime") <- round(Sys.time() - t1,3)
   attr(out.file,"STAR_STATS") <- df.stat
   return(out.file)
 }
@@ -61,9 +60,9 @@ RunARRIBA <- function(sbjBamFile, allProteinPredictions = FALSE){
     stop(paste0("\nERROR ", basename(sbjBamFile), "NOT FOUND"))
   }
   
-  fusion.file <- stringr::str_replace(sbjBamFile,software$Software$STAR$alignmentPrefix,"_Fusions.tsv")
+  fusion.file <- stringr::str_replace(sbjBamFile,paste0(software$Software$STAR$alignmentPrefix,"Aligned.out"),"_Fusions.tsv")
   fusion.file <- stringr::str_remove_all(fusion.file,".bam")
-  fusion.discarded.file <- stringr::str_replace(sbjBamFile,software$Software$STAR$alignmentPrefix,"_Fusions_discarded.tsv")
+  fusion.discarded.file <- stringr::str_replace(sbjBamFile,paste0(software$Software$STAR$alignmentPrefix,"Aligned.out"),"_Fusions_discarded.tsv")
   fusion.discarded.file <- stringr::str_remove_all(fusion.discarded.file,".bam")
   
   # genomeversion <- ifelse(assemblyVersion == "GRCh37", "hg19_hs37d5_","hg38_")
@@ -99,10 +98,16 @@ RunARRIBA <- function(sbjBamFile, allProteinPredictions = FALSE){
   version.info <- data.frame(  STAR = software$Software$STAR$version, 
                                ARRIBA = software$Software$ARRIBA$version, 
                                ASSEMBLY =assemblyVersion,
-                               ArribaR=packageVersion("ArribaR"),
+                               ArribaR=paste0(unlist(packageVersion("ArribaR")),collapse = "." ),
                                SAMPLE = stringr::str_remove(basename(fusion.file),"_Fusions.tsv"))
+  sts <- na.omit(attr(sbjBamFile,"STAR_STATS"))
   openxlsx::write.xlsx(list(Fusions=fusionsTable,Info=version.info, 
-                       stats=attr(sbjBamFile,"STAR_STATS")), stringr::str_replace(fusion.file,".tsv",".xlsx"))
+                       stats=sts), stringr::str_replace(fusion.file,".tsv",".xlsx"),overwrite = T)
+  system2( command="awk", args= sprintf(' \'$10!=0 && $11!=0 && $12 !=0\' %s',fusion.discarded.file),
+           stdout = stringr::str_replace(fusion.discarded.file,".tsv","_filtered.tsv" ))
+  if(file.exists(stringr::str_replace(fusion.discarded.file,".tsv","_filtered.tsv" ))){
+    file.remove(fusion.discarded.file)
+  }
   file.remove(fusion.file)
   #return(fusionsTable) ##for continuous processing into R
   # if(!stringr::str_detect(sbjBamFile,software$star$alignmentPrefixSorted)){
