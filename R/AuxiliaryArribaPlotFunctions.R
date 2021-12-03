@@ -659,7 +659,8 @@ findExons <- function(exons, contig, gene, direction, breakpoint, coverage, tran
 }
 
 .FusionsPlot <- function(fusionTable ,exons, cytobands, alignmentsFile , proteinDomains ,gene1 ,gene2){
-  ##
+  ##initialize
+
  require(GenomicAlignments)
   require(GenomicRanges)
   ##
@@ -1103,6 +1104,7 @@ findExons <- function(exons, contig, gene, direction, breakpoint, coverage, tran
 #' @param gene1 string with geneID as returned by \code{\link{RunArriba}} 
 #' _Fusion.xlsx table. Default missing (will plot all the fusions), otherwise it will only plot all the fusions where this gene is present
 #' @param gene2 idem as gene1. If both gene1 and gene2 are set, only the fusions including those genes will be plotted
+#' @param fusions if missing, it will upload the Fusions.xlsx file, else excel file with the desired fusions should be provided
 #' @seealso \code{\link{runArriba}}
 #' @examples 
 #' \dontrun{
@@ -1113,7 +1115,7 @@ findExons <- function(exons, contig, gene, direction, breakpoint, coverage, tran
 #' FusionPlot(bam.sorted.subject)
 #' }
 #' 
-FusionPlot <- function(sbjBamFile,gene1,gene2){
+FusionPlot <- function(sbjBamFile,gene1,gene2, fusions){
   darkColor1 <- getDarkColor(color1)
   darkColor2 <- getDarkColor(color2)
   software <- .OpenConfigFile()
@@ -1125,13 +1127,18 @@ FusionPlot <- function(sbjBamFile,gene1,gene2){
   if(!all(file.exists(sbjBamFile,paste0(sbjBamFile,".bai")))){
     stop(paste0("\nERROR: files\n",sbjBamFile,"\n",paste0(sbjBamFile,".bai"),"\nMUST EXIST"))
   }
-
-  fusion.file <- stringr::str_remove(sbjBamFile,software$star$alignmentPrefixSorted)
-  fusion.file <- paste0(fusion.file,"_Fusions.tsv")
-
-  # fusionTable <- openxlsx::read.xlsx(fusion.file)
-
-  fusions <- .ReadArribaFusionTable(fusionsFile = fusion.file)
+ if(missing(fusions)==TRUE){
+   
+   fusion.file <- stringr::str_remove(sbjBamFile,software$star$alignmentPrefixSorted)
+   fusion.file <- paste0(fusion.file,"_Fusions.tsv")
+   
+   # fusionTable <- openxlsx::read.xlsx(fusion.file)
+   
+   fusions <- .ReadArribaFusionTable(fusionsFile = fusion.file) 
+ }else{
+   fusions <- .ReadArribaFusionTable(fusionsFile = fusions) 
+ }
+  
   
   # read cytoband annotation
   cytobands <- .ReadCytobandFile()
@@ -1147,6 +1154,9 @@ FusionPlot <- function(sbjBamFile,gene1,gene2){
   # Rsamtools::sortBam(file = subjAlignedBam, destination = stringr::str_replace(subjAlignedBam, ".bam","SortedByCoord"))
   # subjAlignedBam <- stringr::str_replace(subjAlignedBam, ".bam","SortedByCoord.bam")
   # Rsamtools::indexBam(subjAlignedBam)
+  
+ 
+  
   
   .FusionsPlot(
     fusionTable = fusions,

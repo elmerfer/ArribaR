@@ -14,6 +14,8 @@ FusionPlot(sbjBamFile,gene1,gene2)
 _Fusion.xlsx table. Default missing (will plot all the fusions), otherwise it will only plot all the fusions where this gene is present}
 
 \item{gene2}{idem as gene1. If both gene1 and gene2 are set, only the fusions including those genes will be plotted}
+
+\item{fusions}{if missing, it will upload the Fusions.xlsx file, else excel file with the desired fusions should be provided}
 }
 \description{
 FusionPlot 

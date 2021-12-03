@@ -5,10 +5,12 @@
 \title{.ReadCytobandFile
 Internal function. Read cytoband information}
 \usage{
-.ReadCytobandFile()
+.ReadCytobandFile(species, version)
 }
 \arguments{
-\item{fusionFile}{string with the full path of the Fussion.tsv table}
+\item{species}{see \code{\link[GenomeDB]{GetGenomes}}}
+
+\item{version}{see \code{\link[GenomeDB]{GetGenomes}}}
 }
 \description{
 .ReadCytobandFile
