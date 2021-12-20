@@ -44,8 +44,8 @@ InstallArribaR <- function(){
   # 
   # .DownloadAssemblies()
   # .DownloadAnnotation()
-  # .BuildSTARindex()
-  .InstallArribaGeneFusion()
+   Aligners::UpdateSTARindex()
+   .InstallArribaOnGenomeDB()
 }
 
 
@@ -118,7 +118,7 @@ InstallArribaR <- function(){
   stopifnot(dir.create(software$Software$ARRIBA$main))
   
   
-  software$Sotware$ARRIBA$version <- "2.1.0"
+  software$Software$ARRIBA$version <- "2.1.0"
   tmp.destfile <- tempfile()
   # "/media/respaldo4t/Softwares/arriba_v2.1.0.tar.gz"
   download.file(url = "https://github.com/suhrig/arriba/releases/download/v2.1.0/arriba_v2.1.0.tar.gz",
