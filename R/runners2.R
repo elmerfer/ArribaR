@@ -119,39 +119,64 @@ RunARRIBA <- function(sbjBamFile, allProteinPredictions = FALSE){
   return(invisible(fusionsTable))
 }
 
-#' #' runSortIndexBam
-#' #' This function will built the sorted bam file and its index.
-#' #' @param sbjBamFile string full path of aligned bam file see \code{\link[runSTAR]{runSTAR}}
+#' #' RunSortIndexBam
+#' #' This function will built the sorted bam file and its index which are necesary for visualization
+#' #' @param sbjBamFile string full path of aligned bam file see \code{\link{RunSTARforARRIBA}}
 #' #' @param remove boolean (default  TRUE), if unsorted bam file should be removed or not.
 #' #' @export
 #' #' @seealso \code{\link[Rsamtools]{sortBam}}
-#' RunSortIndexBam <- function(sbjBamFile, remove = T){
-#'   software <- .OpenConfigFile()
-#'   if(!file.exists(sbjBamFile)){
-#'     stop(paste0("\nERROR ",sbjBamFile," NOT FOUND"))
-#'   }
-#'   if(!stringr::str_detect(sbjBamFile,".bam")){
-#'     stop(paste0("\nERROR this is not a bam file",sbjBamFile,"\n"))
-#'   }
-#'   if(stringr::str_detect(sbjBamFile, software$star$alignmentPrefixSorted)){
-#'     stop(paste0("\nThe file seems to be already soprted, pls verify"))
-#'   }
-#'   if(!stringr::str_detect(sbjBamFile,software$star$alignmentPrefix)){
-#'     warning("The file seems not being aligned trhough ArribaR::runSTAR() function")
-#'     destination.file <- stringr::remove(
-#'       paste0(sbjBamFile, software$star$alignmentPrefixSorted), ".bam")
-#'   }else{
-#'     destination.file <- stringr::str_remove(
-#'       stringr::str_replace(sbjBamFile, software$star$alignmentPrefix, software$star$alignmentPrefixSorted), ".bam")
-#'   }
-#'   Rsamtools::sortBam(file = sbjBamFile,
-#'                      destination = destination.file)
-#'   destination.file <- paste0(destination.file,".bam")
-#'   if(file.exists(destination.file)){
-#'     Rsamtools::indexBam(destination.file)
-#'     if(remove) file.remove(sbjBamFile)
-#'   }
-#'   
-#'   return(destination.file)
-#'   
-#' }
+RunSortIndexBam <- function(sbjBamFile, remove = T){
+  software <- .OpenConfigFile()
+  if(!file.exists(sbjBamFile)){
+    stop(paste0("\nERROR ",sbjBamFile," NOT FOUND"))
+  }
+  if(!stringr::str_detect(sbjBamFile,".bam")){
+    stop(paste0("\nERROR this is not a bam file",sbjBamFile,"\n"))
+  }
+  if(stringr::str_detect(sbjBamFile, software$star$alignmentPrefixSorted)){
+    stop(paste0("\nThe file seems to be already sorted, pls verify"))
+  }
+  hd <- ArribaR:::.ReadBamHeader(sbjBamFile)
+  if(hd$ProgramName!="STAR"){
+    stop("It should be aligned by RunSTARforARRIBA function")
+  }else{
+    destination.file <- stringr::str_replace(sbjBamFile, ".bam", "SortedByCoordinates")
+  }
+  Rsamtools::sortBam(file = sbjBamFile,
+                     destination = destination.file)
+  destination.file <- paste0(destination.file,".bam")
+  if(file.exists(destination.file)){
+    Rsamtools::indexBam(destination.file)
+    if(remove) file.remove(sbjBamFile)
+  }
+
+  return(destination.file)
+
+}
+
+##' .ReadBamHeader
+##' @param bamFile bam file full path
+##' @return a list with the following slots:
+##' CHR: the list of chromosomes and sequence names in the bam file
+##' ProgramName : the alignment program (PG:PN see [BAM header](https://samtools.github.io/hts-specs/SAMv1.pdf))
+##' ProgramVersion : the version of the aligner
+##' Code : executed source line code
+##' GenomeDBversion : the genome version used (see GenomeDB)
+##' GenomeDBpath : the path to genome version
+##' 
+.ReadBamHeader <- function(bamFile){
+  hd <- Rsamtools::scanBamHeader(bamFile)
+  ##program name and version
+  pname <- stringr::str_remove_all(grep(pattern = "PN", unlist(hd),value=TRUE),"PN:")
+  pversion <- stringr::str_remove_all(grep(pattern = "VN", unlist(hd),value=TRUE),"VN:")
+  bam.chrs <- names(hd[1]$targets)
+  CL <- grep(pattern = "CL", unlist(hd),value=TRUE)
+  code <- unlist(str_split(CL," "))
+  id<- which(str_detect(code,"--genomeDir"))
+  
+  gpath <- code[id+1]
+  genome <- basename(gpath)
+  id<- which(str_detect(code,"--sjdbGTFfile"))
+  gtf <- code[id+1]
+  return(list(CHR=bam.chrs,ProgramName = pname, ProgramVersion=pversion, Code =CL, GenomeDBversion=genome, GenomeDBpath = gpath, GTF=gtf))
+}

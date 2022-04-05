@@ -24,29 +24,35 @@ between <- function(value, start, end) {
     fusions <- openxlsx::read.xlsx(fusionsFile)  
     first.pattern <- "gene1"
     colnames(fusions) <- make.names(colnames(fusions))
+    attr(fusions,"AssemblyInfo") <- openxlsx::read.xlsx(fusionsFile,sheet = "Info")
   }else{
     fusions <- read.table(fusionsFile, stringsAsFactors=F, sep="\t", header=T, comment.char="", quote="")
     first.pattern <- "X.gene1"
+    attr(fusions,"AssemblyInfo") <- "Unknown"
   }
   # fusions <- read.table(fusionsFile, stringsAsFactors=F, sep="\t", header=T, comment.char="", quote="")
   if (colnames(fusions)[1] == first.pattern) { # Arriba output
     colnames(fusions)[colnames(fusions) %in% c(first.pattern, "strand1.gene.fusion.", "strand2.gene.fusion.")] <- c("gene1", "strand1", "strand2")
-    fusions$display_contig1 <- sub(":[^:]*$", "", fusions$breakpoint1, perl=T)
-    fusions$display_contig2 <- sub(":[^:]*$", "", fusions$breakpoint2, perl=T)
     fusions$contig1 <- removeChr(fusions$display_contig1)
     fusions$contig2 <- removeChr(fusions$display_contig2)
+    fusions$display_contig1 <- sub(":[^:]*$", "", fusions$breakpoint1, perl=T)
+    fusions$display_contig2 <- sub(":[^:]*$", "", fusions$breakpoint2, perl=T)
+    # fusions$contig1 <- removeChr(fusions$display_contig1)
+    # fusions$contig2 <- removeChr(fusions$display_contig2)
     fusions$breakpoint1 <- as.numeric(sub(".*:", "", fusions$breakpoint1, perl=T))
     fusions$breakpoint2 <- as.numeric(sub(".*:", "", fusions$breakpoint2, perl=T))
     fusions$split_reads <- fusions$split_reads1 + fusions$split_reads2
   } else if (colnames(fusions)[1] == "X.FusionName") { # STAR-Fusion
     fusions$gene1 <- sub("\\^.*", "", fusions$LeftGene, perl=T)
     fusions$gene2 <- sub("\\^.*", "", fusions$RightGene, perl=T)
+    fusions$contig1 <- removeChr(fusions$display_contig1)
+    fusions$contig2 <- removeChr(fusions$display_contig2)
     fusions$strand1 <- sub(".*:(.)$", "\\1/\\1", fusions$LeftBreakpoint, perl=T)
     fusions$strand2 <- sub(".*:(.)$", "\\1/\\1", fusions$RightBreakpoint, perl=T)
     fusions$display_contig1 <- sub(":[^:]*:[^:]*$", "", fusions$LeftBreakpoint, perl=T)
     fusions$display_contig2 <- sub(":[^:]*:[^:]*$", "", fusions$RightBreakpoint, perl=T)
-    fusions$contig1 <- removeChr(fusions$display_contig1)
-    fusions$contig2 <- removeChr(fusions$display_contig2)
+    # fusions$contig1 <- removeChr(fusions$display_contig1)
+    # fusions$contig2 <- removeChr(fusions$display_contig2)
     fusions$breakpoint1 <- as.numeric(sub(".*:([^:]*):[^:]*$", "\\1", fusions$LeftBreakpoint, perl=T))
     fusions$breakpoint2 <- as.numeric(sub(".*:([^:]*):[^:]*$", "\\1", fusions$RightBreakpoint, perl=T))
     fusions$direction1 <- ifelse(grepl(":\\+$", fusions$LeftBreakpoint, perl=T), "downstream", "upstream")
@@ -60,6 +66,7 @@ between <- function(value, start, end) {
     fusions$site1 <- rep("exon", nrow(fusions))
     fusions$site2 <- rep("exon", nrow(fusions))
     fusions$confidence <- rep("high", nrow(fusions))
+    
   } else {
     stop("Unrecognized fusion file format")
   }
@@ -99,8 +106,9 @@ return(invisible(fusions))
   
   if(!exists("exons", envir = .ArribaEnvironment, inherits = FALSE)){
     message("Loading exons")
+    assembly <- attr(fusionsTable,"AssemblyInfo")
     fasta.gtf.files <- GenomeDB::GetGenome("Human","GRCh38+GENECODE")
-    exonsFile <- file.path(software$annotation,"GENCODE19.gtf")
+    # exonsFile <- software$Software$STAR$main[,assembly["ASSEMBLY"]]
     exons <- rtracklayer::readGFF(fasta.gtf.files$gtf)[, c("seqid","source","type","start","end","strand","gene_id","gene_name","transcript_id","exon_number")]
     
     colnames(exons) <- c("contig", "source" ,"type", "start", "end", "strand", "geneID","geneName","transcript","exonNumber")
@@ -124,16 +132,15 @@ return(invisible(fusions))
     )
     exons <- rbind(exons, data.frame(
       contig=intergenicBreakpoints$contig,
+      source = "",
       type="intergenic",
       start=intergenicBreakpoints$breakpoint-1000,
       end=intergenicBreakpoints$breakpoint+1000,
       strand=".",
-      attributes="",
-      geneName=intergenicBreakpoints$gene,
       geneID=intergenicBreakpoints$gene,
+      geneName=intergenicBreakpoints$gene,
       transcript=intergenicBreakpoints$gene,
-      exonNumber="intergenic", 
-      source = ""
+      exonNumber="intergenic"
     ))
   }
   return(exons)

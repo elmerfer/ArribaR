@@ -16,6 +16,8 @@ _Fusion.xlsx table. Default missing (will plot all the fusions), otherwise it wi
 \item{gene2}{idem as gene1. If both gene1 and gene2 are set, only the fusions including those genes will be plotted}
 
 \item{fusions}{if missing, it will upload the Fusions.xlsx file, else excel file with the desired fusions should be provided}
+
+\item{savePlot}{(boolean) if plot should be saved}
 }
 \description{
 FusionPlot 

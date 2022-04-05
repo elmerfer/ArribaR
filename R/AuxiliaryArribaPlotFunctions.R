@@ -658,7 +658,7 @@ findExons <- function(exons, contig, gene, direction, breakpoint, coverage, tran
   return(candidateExons)
 }
 
-.FusionsPlot <- function(fusionTable ,exons, cytobands, alignmentsFile , proteinDomains ,gene1 ,gene2){
+.FusionsPlot <- function(fusionTable ,exons, cytobands, alignmentsFile , proteinDomains ,gene1 ,gene2, savePng=FALSE){
   ##initialize
 
  require(GenomicAlignments)
@@ -775,9 +775,13 @@ findExons <- function(exons, contig, gene, direction, breakpoint, coverage, tran
     breakpoint1 <- fusions[fusion,"breakpoint1"]
     breakpoint2 <- fusions[fusion,"breakpoint2"]
     if (breakpoint1 < min(exons1$start)) {
-      exons1 <- rbind(c(exons1[1,"contig"], "dummy", breakpoint1-1000, breakpoint1-1000, exons1[1,"strand"], "", "dummy", exons1[1,"geneID"], exons1[1,"transcript"], ""), exons1)
+      exons1 <- rbind(c(contig=exons1[1,"contig"], source="dummy", start=breakpoint1-1000, 
+                        end=breakpoint1-1000, strand=exons1[1,"strand"], geneID="", geneName=exons1[1,"geneID"], 
+                        transcript=exons1[1,"transcript"], exonNumber =""), exons1)
     } else if (breakpoint1 > max(exons1$end)) {
-      aa <- matrix(c(exons1[1,"contig"], "dummy", breakpoint1+1000, breakpoint1+1000, exons1[1,"strand"], "", "dummy", exons1[1,"geneID"], exons1[1,"transcript"], ""),nrow = 1)
+      aa <- matrix(c(contig=exons1[1,"contig"], source="dummy", start=breakpoint1-1000, 
+                     end=breakpoint1-1000, strand=exons1[1,"strand"], geneID="", geneName=exons1[1,"geneID"], 
+                     transcript=exons1[1,"transcript"], exonNumber =""),nrow = 1)
       aa <- data.frame(aa)
       colnames(aa) <- colnames(exons1)
       exons1 <- rbind(exons1,aa)
@@ -787,9 +791,13 @@ findExons <- function(exons, contig, gene, direction, breakpoint, coverage, tran
       #   c(exons1[1,"contig"], "dummy", breakpoint1+1000, breakpoint1+1000, exons1[1,"strand"], "", "dummy", exons1[1,"geneID"], exons1[1,"transcript"], ""))))
     }
     if (breakpoint2 < min(exons2$start)) {
-      exons2 <- rbind(c(exons2[1,"contig"], "dummy", breakpoint2-1000, breakpoint2-1000, exons2[1,"strand"], "", "dummy", exons2[1,"geneID"], exons2[1,"transcript"], ""), exons2)
+      exons2 <- rbind(c(contig=exons2[1,"contig"], source="dummy",type="dummy", start=breakpoint2-1000, 
+                        end=breakpoint2-1000, strand=exons2[1,"strand"],geneID= "",  geneName=exons2[1,"geneID"], 
+                        transcript=exons2[1,"transcript"], exonNumber= ""), exons2)
     } else if (breakpoint2 > max(exons2$end)) {
-      aa2 <- matrix(c(exons2[1,"contig"], "dummy", breakpoint2+1000, breakpoint2+1000, exons2[1,"strand"], "", "dummy", exons2[1,"geneID"], exons2[1,"transcript"], ""),nrow = 1)
+      aa2 <- matrix(c(contig=exons2[1,"contig"], source="dummy",type="dummy", start=breakpoint2-1000, 
+                      end=breakpoint2-1000, strand=exons2[1,"strand"],geneID= "",  geneName=exons2[1,"geneID"], 
+                      transcript=exons2[1,"transcript"], exonNumber= ""),nrow = 1)
       aa2 <- data.frame(aa2)
       colnames(aa2) <- colnames(exons2)
       exons2 <- rbind(exons2, aa2)
@@ -865,6 +873,11 @@ findExons <- function(exons, contig, gene, direction, breakpoint, coverage, tran
     fusionOffset1 <- (max(exons1$right)+gene2Offset)/2 - ifelse(fusions[fusion,"direction1"] == "downstream", breakpoint1, max(exons1$right)-breakpoint1)
     fusionOffset2 <- fusionOffset1 + ifelse(fusions[fusion,"direction1"] == "downstream", breakpoint1, max(exons1$right)-breakpoint1)
 
+    #### start plots ###
+    if(!missing(alignmentsFile) & savePng){
+      png(filename = file.path(dirname(alignmentsFile),paste0(fusions[fusion,"gene1"],":",fusions[fusion,"gene2"],".png")))
+    }
+    
     # layout: fusion on top, circos plot on bottom left, protein domains on bottom center, statistics on bottom right
     layout(matrix(c(1,1,1,2,3,4), 2, 3, byrow=TRUE), widths=c(0.9, 1.2, 0.9))
     par(mar=c(0, 0, 0, 0))
@@ -1092,7 +1105,10 @@ findExons <- function(exons, contig, gene, direction, breakpoint, coverage, tran
     plot(0, 0, type="l", xlim=c(0, 1), ylim=c(0, 1), bty="n", xaxt="n", yaxt="n")
     text(0, 0.575, "SUPPORTING READ COUNT", font=2, adj=c(0,0), cex=fontSize)
     text(0, 0.525, paste0("Split reads = ", fusions[fusion,"split_reads"], "\n", "Discordant mates = ", fusions[fusion,"discordant_mates"]), adj=c(0,1), cex=fontSize)
-
+    
+    if(!missing(alignmentsFile) & savePng){
+      dev.off()
+    }
   }
 }
 
@@ -1105,6 +1121,7 @@ findExons <- function(exons, contig, gene, direction, breakpoint, coverage, tran
 #' _Fusion.xlsx table. Default missing (will plot all the fusions), otherwise it will only plot all the fusions where this gene is present
 #' @param gene2 idem as gene1. If both gene1 and gene2 are set, only the fusions including those genes will be plotted
 #' @param fusions if missing, it will upload the Fusions.xlsx file, else excel file with the desired fusions should be provided
+#' @param savePlot (boolean) if plot should be saved
 #' @seealso \code{\link{runArriba}}
 #' @examples 
 #' \dontrun{
@@ -1115,22 +1132,21 @@ findExons <- function(exons, contig, gene, direction, breakpoint, coverage, tran
 #' FusionPlot(bam.sorted.subject)
 #' }
 #' 
-FusionPlot <- function(sbjBamFile,gene1,gene2, fusions){
+FusionPlot <- function(sbjBamFile,gene1,gene2, fusions, savePlot=TRUE){
   darkColor1 <- getDarkColor(color1)
   darkColor2 <- getDarkColor(color2)
   software <- .OpenConfigFile()
 
-  if(!stringr::str_detect(sbjBamFile,software$star$alignmentPrefixSorted)){
-    stop(paste0("\nERROR: it does not seems to be a sorted BAM file\nPlease verify, the file should end in ",
-                software$star$alignmentPrefixSorted,"\n"))
-  }
+  if(!file.exists(paste0(sbjBamFile,".bai"))){
+     stop(paste0("\nERROR: it does not seems to be a sorted BAM file\nPlease verify\n"))
+   }
   if(!all(file.exists(sbjBamFile,paste0(sbjBamFile,".bai")))){
     stop(paste0("\nERROR: files\n",sbjBamFile,"\n",paste0(sbjBamFile,".bai"),"\nMUST EXIST"))
   }
  if(missing(fusions)==TRUE){
-   
-   fusion.file <- stringr::str_remove(sbjBamFile,software$star$alignmentPrefixSorted)
-   fusion.file <- paste0(fusion.file,"_Fusions.tsv")
+   hd<-ArribaR:::.ReadBamHeader(sbjBamFile)
+   fusion.file <- unlist(stringr::str_split(sbjBamFile,hd$ProgramName))[1]
+   fusion.file <- paste0(fusion.file,"Fusions.xlsx")
    
    # fusionTable <- openxlsx::read.xlsx(fusion.file)
    
@@ -1165,6 +1181,7 @@ FusionPlot <- function(sbjBamFile,gene1,gene2, fusions){
     alignmentsFile =  sbjBamFile,
     proteinDomains = proteinDomains,
     gene1 = gene1,
-    gene2 = gene2)
+    gene2 = gene2,
+    savePng = savePlot)
   
 }

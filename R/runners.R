@@ -195,7 +195,7 @@ RunSortIndexBam <- function(sbjBamFile, remove = T){
   }
   if(!stringr::str_detect(sbjBamFile,software$star$alignmentPrefix)){
     warning("The file seems not being aligned trhough ArribaR::runSTAR() function")
-    destination.file <- stringr::remove(
+    destination.file <- stringr::str_remove(
       paste0(sbjBamFile, software$star$alignmentPrefixSorted), ".bam")
   }else{
     destination.file <- stringr::str_remove(
