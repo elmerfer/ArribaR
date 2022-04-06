@@ -17,7 +17,9 @@ Imports:
     Rsamtools,
     GenomicRanges,
     GenomicAlignments,
-    rtracklayer
+    rtracklayer,
+    GenomeDB,
+    Aligners
 Suggests: 
     knitr, 
     rmarkdown
