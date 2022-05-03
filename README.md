@@ -31,10 +31,24 @@ The row sequencing data should be "xxxxx_1.fastq" or "xxxxx_1.fastq.gz". The sec
 ```
 library(ArribaR)
 test.subject <- GetArribaRTest()
-bam.subject <- RunSTAR(test.subject)
-Fusions <- RunArriba(bam.subject)
+bam.subject <- RunSTARforARRIBA(test.subject)
+Fusions <- RunARRIBA(bam.subject)
 View(Fusions)
 ```
+## Interactive usage
+copy this R script in your RStudio and source it
+```
+library(stringr)
+select <- file.choose()
+if(length(select)>0){
+   bam.file <-RunSTARforARRIBA(sbjFile = select, nThreads = 10L)
+   RunARRIBA(bam.file)
+   sorted.bam.file <- RunSortIndexBam(bam.file, remove = F)
+   FusionPlot(sorted.bam.file, savePlot = T)
+ }else{
+   cat("No File selected")
+ }
+ ```
 
 # Authors
 * **Elmer A. Fernández** CIDIE-UCC-CONICET
