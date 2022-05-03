@@ -18,7 +18,7 @@ install_github("elmerfer/ArribaR")
 ```
 InstallArribaR("where/I/want/to/install/path")
 ```
-This make take a long time and it will do the following process
+This may take a long time and it will do the following process
 * minimal installation of the STAR version 2.7.6a (the one required for Arriba version 2.1.0)
 * the GRCc37(Hg19) Human reference file 
 * the GENCODE GTF annotation file
