@@ -33,8 +33,7 @@ between <- function(value, start, end) {
   # fusions <- read.table(fusionsFile, stringsAsFactors=F, sep="\t", header=T, comment.char="", quote="")
   if (colnames(fusions)[1] == first.pattern) { # Arriba output
     colnames(fusions)[colnames(fusions) %in% c(first.pattern, "strand1.gene.fusion.", "strand2.gene.fusion.")] <- c("gene1", "strand1", "strand2")
-    # fusions$contig1 <- removeChr(fusions$display_contig1)
-    # fusions$contig2 <- removeChr(fusions$display_contig2)
+
     fusions$display_contig1 <- sub(":[^:]*$", "", fusions$breakpoint1, perl=T)
     fusions$display_contig2 <- sub(":[^:]*$", "", fusions$breakpoint2, perl=T)
     fusions$contig1 <- removeChr(fusions$display_contig1)
@@ -42,6 +41,9 @@ between <- function(value, start, end) {
     fusions$breakpoint1 <- as.numeric(sub(".*:", "", fusions$breakpoint1, perl=T))
     fusions$breakpoint2 <- as.numeric(sub(".*:", "", fusions$breakpoint2, perl=T))
     fusions$split_reads <- fusions$split_reads1 + fusions$split_reads2
+    
+    # fusions$contig1 <- removeChr(fusions$display_contig1)
+    # fusions$contig2 <- removeChr(fusions$display_contig2)
   } else if (colnames(fusions)[1] == "X.FusionName") { # STAR-Fusion
     fusions$gene1 <- sub("\\^.*", "", fusions$LeftGene, perl=T)
     fusions$gene2 <- sub("\\^.*", "", fusions$RightGene, perl=T)
