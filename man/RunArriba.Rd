@@ -2,7 +2,30 @@
 % Please edit documentation in R/runners.R
 \name{RunArriba}
 \alias{RunArriba}
-\title{RunArriba
+\title{#' GetArribaRTest
+#' This function will retrieve the test files coming with the arriba software
+#' @usage test.files <- GetArribaRTest()
+#' @return an string with the full path of the firs read file of the test
+GetArribaRTest <- function(){
+  software <- G.OpenConfigFile()
+  files <- list.files(paste0(software$arriba$path,"/test"),full.names = T)
+  id.fastq <- which(stringr::str_detect(files,"read1.fastq.gz"))
+  id.fastq2 <- which(stringr::str_detect(files,"read2.fastq.gz"))
+if(length(id.fastq)>0){
+  file.rename(files[id.fastq],stringr::str_replace(files[id.fastq],"read1.fastq.gz","read_1.fastq.gz"))
+  file.rename(files[id.fastq2],stringr::str_replace(files[id.fastq2],"read2.fastq.gz","read_2.fastq.gz"))
+}else{
+  if(file.exists(paste0(software$arriba$path,"/test/read_1.fastq.gz"))){
+    return(paste0(software$arriba$path,"/test/read_1.fastq.gz"))
+  }
+  return(NULL)
+}
+  if(file.exists(paste0(software$arriba$path,"/test/read_1.fastq.gz"))){
+    return(paste0(software$arriba$path,"/test/read_1.fastq.gz"))
+  }
+  return(NULL)
+}
+RunArriba
 this function will run the gene fusion detection ARRIBA software}
 \usage{
 RunArriba(sbjBamFile)
@@ -15,6 +38,29 @@ a data frame with the identified fusions
 \url{https://arriba.readthedocs.io/en/latest/output-files/}{see details in Arriba output files}
 }
 \description{
+#' GetArribaRTest
+#' This function will retrieve the test files coming with the arriba software
+#' @usage test.files <- GetArribaRTest()
+#' @return an string with the full path of the firs read file of the test
+GetArribaRTest <- function(){
+  software <- G.OpenConfigFile()
+  files <- list.files(paste0(software$arriba$path,"/test"),full.names = T)
+  id.fastq <- which(stringr::str_detect(files,"read1.fastq.gz"))
+  id.fastq2 <- which(stringr::str_detect(files,"read2.fastq.gz"))
+if(length(id.fastq)>0){
+  file.rename(files[id.fastq],stringr::str_replace(files[id.fastq],"read1.fastq.gz","read_1.fastq.gz"))
+  file.rename(files[id.fastq2],stringr::str_replace(files[id.fastq2],"read2.fastq.gz","read_2.fastq.gz"))
+}else{
+  if(file.exists(paste0(software$arriba$path,"/test/read_1.fastq.gz"))){
+    return(paste0(software$arriba$path,"/test/read_1.fastq.gz"))
+  }
+  return(NULL)
+}
+  if(file.exists(paste0(software$arriba$path,"/test/read_1.fastq.gz"))){
+    return(paste0(software$arriba$path,"/test/read_1.fastq.gz"))
+  }
+  return(NULL)
+}
 RunArriba
 this function will run the gene fusion detection ARRIBA software
 }

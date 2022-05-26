@@ -180,3 +180,27 @@ RunSortIndexBam <- function(sbjBamFile, remove = T){
   gtf <- code[id+1]
   return(list(CHR=bam.chrs,ProgramName = pname, ProgramVersion=pversion, Code =CL, GenomeDBversion=genome, GenomeDBpath = gpath, GTF=gtf))
 }
+
+#' GetArribaRTest
+#' This function will retrieve the test files coming with the arriba software
+#' @usage test.files <- GetArribaRTest()
+#' @return an string with the full path of the firs read file of the test
+GetArribaRTest <- function(){
+  software <- GenomeDB:::.OpenConfigFile()
+  files <- list.files(paste0(software$Software$ARRIBA$main,"/test"),full.names = T)
+  id.fastq <- which(stringr::str_detect(files,"read1.fastq.gz"))
+  id.fastq2 <- which(stringr::str_detect(files,"read2.fastq.gz"))
+  if(length(id.fastq)>0){
+    file.rename(files[id.fastq],stringr::str_replace(files[id.fastq],"read1.fastq.gz","read_1.fastq.gz"))
+    file.rename(files[id.fastq2],stringr::str_replace(files[id.fastq2],"read2.fastq.gz","read_2.fastq.gz"))
+  }else{
+    if(file.exists(paste0(software$Software$ARRIBA$main,"/test/read_1.fastq.gz"))){
+      return(paste0(software$Software$ARRIBA$main,"/test/read_1.fastq.gz"))
+    }
+    return(NULL)
+  }
+  if(file.exists(paste0(software$Software$ARRIBA$main,"/test/read_1.fastq.gz"))){
+    return(paste0(software$Software$ARRIBA$main,"/test/read_1.fastq.gz"))
+  }
+  return(NULL)
+}
