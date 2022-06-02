@@ -126,21 +126,21 @@ RunARRIBA <- function(sbjBamFile, allProteinPredictions = FALSE){
 #' #' @export
 #' #' @seealso \code{\link[Rsamtools]{sortBam}}
 RunSortIndexBam <- function(sbjBamFile, remove = T){
-  software <- .OpenConfigFile()
+  software <- GenomeDB:::.OpenConfigFile()
   if(!file.exists(sbjBamFile)){
     stop(paste0("\nERROR ",sbjBamFile," NOT FOUND"))
   }
   if(!stringr::str_detect(sbjBamFile,".bam")){
     stop(paste0("\nERROR this is not a bam file",sbjBamFile,"\n"))
   }
-  if(stringr::str_detect(sbjBamFile, software$star$alignmentPrefixSorted)){
+  if(stringr::str_detect(sbjBamFile, software$Software$STAR$alignmentPrefixSorted)){
     stop(paste0("\nThe file seems to be already sorted, pls verify"))
   }
   hd <- ArribaR:::.ReadBamHeader(sbjBamFile)
   if(hd$ProgramName!="STAR"){
     stop("It should be aligned by RunSTARforARRIBA function")
   }else{
-    destination.file <- stringr::str_replace(sbjBamFile, ".bam", "SortedByCoordinates")
+    destination.file <- stringr::str_replace(sbjBamFile,paste0(software$Software$STAR$alignmentPrefix,"Aligned.out.bam"), software$Software$STAR$alignmentPrefixSorted)
   }
   Rsamtools::sortBam(file = sbjBamFile,
                      destination = destination.file)
