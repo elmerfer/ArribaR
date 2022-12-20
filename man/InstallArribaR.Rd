@@ -3,8 +3,8 @@
 \name{InstallArribaR}
 \alias{InstallArribaR}
 \title{InstallArribaR
-This function will install the arri software and all its dependencies like the roght STAR version
-It currently install version 2.1.0 of arriba and 2.7.6a of STAR, the GRCh37 genome assembly and GENCODE19.gtf annotation
+This function will install the arriba software and all its dependencies like the roght STAR version
+It currently install version 2.3.0 of arriba and 2.7.10b of STAR, the GRCh37 genome assembly and GENCODE19.gtf annotation
 future installer will be more felxible}
 \usage{
 InstallArribaR()
@@ -16,7 +16,7 @@ if given, it will create the folder givenpath/Software}
 }
 \description{
 InstallArribaR
-This function will install the arri software and all its dependencies like the roght STAR version
-It currently install version 2.1.0 of arriba and 2.7.6a of STAR, the GRCh37 genome assembly and GENCODE19.gtf annotation
+This function will install the arriba software and all its dependencies like the roght STAR version
+It currently install version 2.3.0 of arriba and 2.7.10b of STAR, the GRCh37 genome assembly and GENCODE19.gtf annotation
 future installer will be more felxible
 }

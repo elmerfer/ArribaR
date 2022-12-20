@@ -20,8 +20,8 @@ library(R.utils)
   
 }
 #' InstallArribaR
-#' This function will install the arri software and all its dependencies like the roght STAR version
-#' It currently install version 2.1.0 of arriba and 2.7.6a of STAR, the GRCh37 genome assembly and GENCODE19.gtf annotation
+#' This function will install the arriba software and all its dependencies like the roght STAR version
+#' It currently install version 2.3.0 of arriba and 2.7.10b of STAR, the GRCh37 genome assembly and GENCODE19.gtf annotation
 #' future installer will be more felxible
 #' @param extDir character string of the instalation path. It should be write enable and hold enouph space
 #' if missing, it will create on the current directory the folder "Software" and everything will be installed there
@@ -58,10 +58,10 @@ InstallArribaR <- function(){
   
   software$Software$ARRIBA$main <- file.path(software$Software$main,"ARRIBA")
   
-  software$Software$ARRIBA$version <- "2.1.0"
+  software$Software$ARRIBA$version <- "2.3.0"
   tmp.destfile <- tempfile()
-    # "/media/respaldo4t/Softwares/arriba_v2.1.0.tar.gz"
-  download.file(url = "https://github.com/suhrig/arriba/releases/download/v2.1.0/arriba_v2.1.0.tar.gz",
+    # "/media/respaldo4t/Softwares/arriba_v2.3.0.tar.gz"
+  download.file(url = "https://github.com/suhrig/arriba/releases/download/v2.3.0/arriba_v2.3.0.tar.gz",
                 method = "wget",
                 destfile = tmp.destfile)
 
@@ -113,15 +113,15 @@ InstallArribaR <- function(){
     stop("ARRIBA already installed")
   }
   
-  # software$arriba$path <- file.path(software$mainPath,"Arriba")
+   software$arriba$path <- file.path(software$mainPath,"Arriba")
   software$Software$ARRIBA$main <-  file.path(software$Software$main,"ARRIBA")#to install softwar versions and index files
   stopifnot(dir.create(software$Software$ARRIBA$main))
   
   
-  software$Software$ARRIBA$version <- "2.1.0"
+  software$Software$ARRIBA$version <- "2.3.0"
   tmp.destfile <- tempfile()
-  # "/media/respaldo4t/Softwares/arriba_v2.1.0.tar.gz"
-  download.file(url = "https://github.com/suhrig/arriba/releases/download/v2.1.0/arriba_v2.1.0.tar.gz",
+  # "/media/respaldo4t/Softwares/arriba_v2.3.0.tar.gz"
+  download.file(url = "https://github.com/suhrig/arriba/releases/download/v2.3.0/arriba_v2.3.0.tar.gz",
                 method = "wget",
                 destfile = tmp.destfile, quite=T)
   
