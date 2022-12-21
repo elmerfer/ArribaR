@@ -147,13 +147,13 @@ RunArriba <- function(sbjBamFile){
                     paste0("-a ",software$assembly,ifelse(assemblyVersion == "GRCh37","/GRCh37.fa","/GRCh38.fa")),
                     paste0("-g ", software$annotation,ifelse(assemblyVersion == "GRCh37","/GENCODE19.gtf","/GENCODE38.gtf")),
                     paste0("-b ", file.path(software$arriba$database,
-                                            paste0("blacklist_",genomeversion,assemblyVersion,"_v2.1.0.tsv.gz"))),
+                                            paste0("blacklist_",genomeversion,assemblyVersion,"_v2.3.0.tsv.gz"))),
                     paste0("-k ", file.path(software$arriba$database,
-                                            paste0("known_fusions_",genomeversion,assemblyVersion,"_v2.1.0.tsv.gz"))),
+                                            paste0("known_fusions_",genomeversion,assemblyVersion,"_v2.3.0.tsv.gz"))),
                     paste0("-t ", file.path(software$arriba$database,
-                                            paste0("known_fusions_",genomeversion,assemblyVersion,"_v2.1.0.tsv.gz"))),
+                                            paste0("known_fusions_",genomeversion,assemblyVersion,"_v2.3.0.tsv.gz"))),
                     paste0("-p ", file.path(software$arriba$database,
-                                            paste0("protein_domains_",genomeversion,assemblyVersion,"_v2.1.0.gff3")))
+                                            paste0("protein_domains_",genomeversion,assemblyVersion,"_v2.3.0.gff3")))
            ))
    
    if(!all(file.exists(fusion.file,fusion.discarded.file))){
