@@ -42,7 +42,7 @@ RunSTARforARRIBA <- function(sbjFile, nThreads, version = "GRCh38+GENECODE"){
 #' \dontrun{
 #' test.subject <- GetArribaRTest()
 #' bam.subject <- RunSTAR(test.subject)
-#' Fusions <- RunArriba(bam.subject)
+#' Fusions <- RunARRIBA(bam.subject)
 #' View(Fusions)
 #' }
 RunARRIBA <- function(sbjBamFile, allProteinPredictions = FALSE){
@@ -80,13 +80,13 @@ RunARRIBA <- function(sbjBamFile, allProteinPredictions = FALSE){
                    paste0("-a ",GenomeAssembly),
                    paste0("-g ", GenomeGTF),
                    paste0("-b ", file.path(software$Software$ARRIBA$database,
-                                           paste0("blacklist_",genomeversion,"_v2.1.0.tsv.gz"))),
+                                           paste0("blacklist_",genomeversion,"_v2.3.0.tsv.gz"))),
                    paste0("-k ", file.path(software$Software$ARRIBA$database,
-                                           paste0("known_fusions_",genomeversion,"_v2.1.0.tsv.gz"))),
+                                           paste0("known_fusions_",genomeversion,"_v2.3.0.tsv.gz"))),
                    paste0("-t ", file.path(software$Software$ARRIBA$database,
-                                           paste0("known_fusions_",genomeversion,"_v2.1.0.tsv.gz"))),
+                                           paste0("known_fusions_",genomeversion,"_v2.3.0.tsv.gz"))),
                    paste0("-p ", file.path(software$Software$ARRIBA$database,
-                                           paste0("protein_domains_",genomeversion,"_v2.1.0.gff3"))),
+                                           paste0("protein_domains_",genomeversion,"_v2.3.0.gff3"))),
                    ifelse(allProteinPredictions,"-X","")
           ))
   
