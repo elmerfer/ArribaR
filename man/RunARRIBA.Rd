@@ -24,7 +24,7 @@ this function will run the gene fusion detection ARRIBA software
 \dontrun{
 test.subject <- GetArribaRTest()
 bam.subject <- RunSTAR(test.subject)
-Fusions <- RunArriba(bam.subject)
+Fusions <- RunARRIBA(bam.subject)
 View(Fusions)
 }
 }
