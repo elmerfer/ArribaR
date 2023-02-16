@@ -34,7 +34,7 @@ This may take a long time and it will do the following process
 * minimal installation of the Arriba software 2.1.0
 
 as a result it will leave an organized "Software" folder at where/I/want/to/install/path/Software
->>>>>>> fbd37c407645f4d06446c25632c7b6d8e9b576e7
+
 
 ## Usage
 This implementation is specifically provided to process human RNAseq paired data, thus requiring to hold both xxxx_1.fastq(.gz) and xxxx_2.fastq(.gz).
