@@ -38,7 +38,7 @@ as a result it will leave an organized "Software" folder at where/I/want/to/inst
 
 ## Usage
 This implementation is specifically provided to process human RNAseq paired data, thus requiring to hold both xxxx_1.fastq(.gz) and xxxx_2.fastq(.gz).
-The row sequencing data should be "xxxxx_1.fastq" or "xxxxx_1.fastq.gz". The second sequen file will be automatically defined as "xxxxx_2.fastq" or "xxxxx_2.fastq.gz"
+The row sequencing data should be "xxxxx_1.fastq" or "xxxxx_1.fastq.gz". The second sequence file will be automatically defined as "xxxxx_2.fastq" or "xxxxx_2.fastq.gz"
 ```
 library(ArribaR)
 test.subject <- GetArribaRTest()
