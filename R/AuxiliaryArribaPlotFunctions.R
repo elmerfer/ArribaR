@@ -172,7 +172,8 @@ drawStrand <- function(left, right, y, color, strand) {
 drawExon <- function(left, right, y, color, title, type) {
   gradientSteps <- 10 # defines smoothness of gradient
   exonHeight <- 0.03
-  if (type == "CDS") {
+  # if (type == "CDS") {
+  if (stringr::str_detect(type, "CDS")) {
     # draw coding regions as thicker bars
     rect(left, y+exonHeight, right, y+exonHeight/2-0.001, col=color, border=NA)
     rect(left, y-exonHeight, right, y-exonHeight/2+0.001, col=color, border=NA)
@@ -182,7 +183,7 @@ drawExon <- function(left, right, y, color, title, type) {
     # draw gradients for 3D effect
     drawVerticalGradient(rep(left, gradientSteps), rep(right, gradientSteps), seq(y+0.03, y+0.015, len=gradientSteps), rgb(0,0,0,0.2))
     drawVerticalGradient(rep(left, gradientSteps), rep(right, gradientSteps), seq(y-0.03, y-0.015, len=gradientSteps), rgb(0,0,0,0.3))
-  } else if (type == "exon") {
+  } else if (stringr::str_detect(type, "exon")){ #if (type == "exon") {
     rect(left, y+exonHeight/2, right, y-exonHeight/2, col=color, border=getDarkColor(color))
     # draw gradients for 3D effect
     drawVerticalGradient(rep(left, gradientSteps), rep(right, gradientSteps), seq(y, y+exonHeight/2, len=gradientSteps), rgb(1,1,1,0.6))
@@ -724,6 +725,7 @@ findExons <- function(exons, contig, gene, direction, breakpoint, coverage, tran
     # find all exons belonging to the fused genes
 
     exons1 <- findExons(exons, fusions[fusion,"contig1"], fusions[fusion,"gene1"], fusions[fusion,"direction1"], fusions[fusion,"breakpoint1"], coverage1, fusions[fusion,"transcript_id1"], transcriptSelection)
+    
     if (nrow(exons1) == 0) {
       par(mfrow=c(1,1))
       plot(0, 0, type="l", xaxt="n", yaxt="n", xlab="", ylab="")
@@ -731,6 +733,7 @@ findExons <- function(exons, contig, gene, direction, breakpoint, coverage, tran
       next
     }
     exons2 <- findExons(exons, fusions[fusion,"contig2"], fusions[fusion,"gene2"], fusions[fusion,"direction2"], fusions[fusion,"breakpoint2"], coverage2, fusions[fusion,"transcript_id2"], transcriptSelection)
+    
     if (nrow(exons2) == 0) {
       par(mfrow=c(1,1))
       plot(0, 0, type="l", xaxt="n", yaxt="n", xlab="", ylab="")
@@ -769,17 +772,21 @@ findExons <- function(exons, contig, gene, direction, breakpoint, coverage, tran
     # sort coding exons last, such that they are drawn over the border of non-coding exons
     exons1 <- exons1[order(exons1$start, -rank(exons1$type)),]
     exons2 <- exons2[order(exons2$start, -rank(exons2$type)),]
-
+    exons1$source <- as.character(exons1$source)
+    exons1$type <- as.character(exons1$type)
+    
+    exons2$source <- as.character(exons2$source)
+    exons2$type <- as.character(exons2$type)
     # insert dummy exons, if breakpoints are outside the gene (e.g., in UTRs)
     # this avoids plotting artifacts
     breakpoint1 <- fusions[fusion,"breakpoint1"]
     breakpoint2 <- fusions[fusion,"breakpoint2"]
     if (breakpoint1 < min(exons1$start)) {
-      exons1 <- rbind(c(contig=exons1[1,"contig"], source="dummy", start=breakpoint1-1000, 
+      exons1 <- rbind(c(contig=exons1[1,"contig"], source="dummy",type="dummy", start=breakpoint1-1000, 
                         end=breakpoint1-1000, strand=exons1[1,"strand"], geneID="", geneName=exons1[1,"geneID"], 
                         transcript=exons1[1,"transcript"], exonNumber =""), exons1)
     } else if (breakpoint1 > max(exons1$end)) {
-      aa <- matrix(c(contig=exons1[1,"contig"], source="dummy", start=breakpoint1-1000, 
+      aa <- matrix(c(contig=exons1[1,"contig"], source="dummy",type="dummy", start=breakpoint1-1000, 
                      end=breakpoint1-1000, strand=exons1[1,"strand"], geneID="", geneName=exons1[1,"geneID"], 
                      transcript=exons1[1,"transcript"], exonNumber =""),nrow = 1)
       aa <- data.frame(aa)
@@ -878,6 +885,8 @@ findExons <- function(exons, contig, gene, direction, breakpoint, coverage, tran
       png(filename = file.path(dirname(alignmentsFile),paste0(fusions[fusion,"gene1"],":",fusions[fusion,"gene2"],".png")))
     }
     
+    exons2 <- exons2[!is.na(exons2$type),]
+    
     # layout: fusion on top, circos plot on bottom left, protein domains on bottom center, statistics on bottom right
     layout(matrix(c(1,1,1,2,3,4), 2, 3, byrow=TRUE), widths=c(0.9, 1.2, 0.9))
     par(mar=c(0, 0, 0, 0))
@@ -954,6 +963,10 @@ findExons <- function(exons, contig, gene, direction, breakpoint, coverage, tran
 
     if (squishIntrons) {
       for (exon in 1:nrow(exons2))
+        er <- try((exons2[exon,"type"] != "CDS"))
+      if(inherits(er,"try-error")){
+        er <- er
+      }
         if (exons2[exon,"type"] != "CDS") # don't draw coverage twice for coding regions
           drawCoverage(gene2Offset+exons2[exon,"left"], gene2Offset+exons2[exon,"right"], yCoverage, coverage2, exons2[exon,"start"], exons2[exon,"end"], color2)
     } else {
@@ -964,15 +977,22 @@ findExons <- function(exons, contig, gene, direction, breakpoint, coverage, tran
     lines(c(min(exons1$left), max(exons1$right)), c(yExons, yExons), col=darkColor1)
     for (gene in unique(exons1$geneName))
       drawStrand(min(exons1[exons1$geneName == gene,"left"]), max(exons1[exons1$geneName == gene,"right"]), yExons, darkColor1, head(exons1[exons1$geneName == gene,"strand"],1))
-    for (exon in 1:nrow(exons1))
+    for (exon in 1:nrow(exons1)){
       drawExon(exons1[exon,"left"], exons1[exon,"right"], yExons, color1, exons1[exon,"exonNumber"], exons1[exon,"type"])
+    }
+      # drawExon(exons1[exon,"left"], exons1[exon,"right"], yExons, color1, exons1[exon,"exonNumber"], exons1[exon,"type"])
+      
 
     # plot gene 2
     lines(c(gene2Offset, gene2Offset+max(exons2$right)), c(yExons, yExons), col=darkColor2)
-    for (gene in unique(exons2$geneName))
+    for (gene in unique(exons2$geneName)){
       drawStrand(gene2Offset+min(exons2[exons2$geneName == gene,"left"]), gene2Offset+max(exons2[exons2$geneName == gene,"right"]), yExons, darkColor2, head(exons2[exons2$geneName == gene,"strand"],1))
-    for (exon in 1:nrow(exons2))
+    }
+      
+    for (exon in 1:nrow(exons2)){
       drawExon(gene2Offset+exons2[exon,"left"], gene2Offset+exons2[exon,"right"], yExons, color2, exons2[exon,"exonNumber"], exons2[exon,"type"])
+    }
+      
 
     # plot gene1 of fusion
     if (fusions[fusion,"direction1"] == "downstream") {
