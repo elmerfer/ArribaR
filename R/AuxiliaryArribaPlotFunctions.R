@@ -882,7 +882,9 @@ findExons <- function(exons, contig, gene, direction, breakpoint, coverage, tran
 
     #### start plots ###
     if(!missing(alignmentsFile) & savePng){
-      png(filename = file.path(dirname(alignmentsFile),paste0(fusions[fusion,"gene1"],":",fusions[fusion,"gene2"],".png")))
+      png(filename = file.path(dirname(alignmentsFile),paste0(fusions[fusion,"gene1"],":",fusions[fusion,"gene2"],
+                                                              "(",fusions[fusion,"breakpoint1"],":",fusions[fusion,"breakpoint2"],")",".png")))
+      
     }
     
     exons2 <- exons2[!is.na(exons2$type),]
